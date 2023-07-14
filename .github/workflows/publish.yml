@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.9, 3.11]
+        python-version: [3.11]
         poetry-version: [1.4.2]
 
     runs-on: ubuntu-latest
@@ -41,4 +41,4 @@ jobs:
       env:
         POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
       run: |
-        python -m poetry publish
+        python -m poetry publish --skip-existing
