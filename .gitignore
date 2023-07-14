@@ -1,5 +1,6 @@
 .venv
 venv/
+dist/
 
 .idea/
 
