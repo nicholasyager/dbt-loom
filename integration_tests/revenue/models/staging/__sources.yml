@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: ecom
+    schema: raw
+    description: E-commerce data
+    tables:
+      - name: raw_orders
+        description: One record per order (consisting of one or more order items)
+      - name: raw_items
+        description: Items included in an order
+      - name: raw_stores
+        description: One record per physical store location
+      - name: raw_products
+        description: One record per SKU for items sold in stores
+      - name: raw_supplies
+        description: One record per supply per SKU of items sold in stores

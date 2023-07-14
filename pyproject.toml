@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "dbt-loom"
+version = "0.1.0"
+description = "A dbt-core plugin to import public nodes in multi-project deployments."
+authors = ["Nicholas Yager <yager@nicholasyager.com>"]
+readme = "README.md"
+packages = [{include = "dbt_loom"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+dbt-postgres = "1.6.0-b8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

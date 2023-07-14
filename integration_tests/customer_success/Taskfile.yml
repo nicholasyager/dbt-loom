@@ -1,0 +1,7 @@
+version: "3"
+
+tasks:
+  deps:
+    cmds:
+      - python -m pip install --progress-bar off -r requirements.txt
+      - dbt deps

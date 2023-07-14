@@ -1,0 +1,3 @@
+manifests:
+ - path: /Users/nicholas/projects/nicholasyager/dbt-loom/integration_tests/revenue/target/manifest.json
+   type: file

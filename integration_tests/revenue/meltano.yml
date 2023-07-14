@@ -1,0 +1,47 @@
+# Meltano Configuration File
+#
+# Sample usage:
+# > meltano run tap-jaffle-shop target-duckdb
+#
+# Or equivalently:
+# > meltano run el  # Run the job named 'el' to extract and load data
+
+version: 1
+project_id: Jaffle Shop Template Project
+
+env:
+  JAFFLE_DB_NAME: jaffle_shop
+  JAFFLE_RAW_SCHEMA: jaffle_raw
+
+default_environment: dev
+environments:
+  - name: dev
+
+plugins:
+  extractors:
+    - name: tap-jaffle-shop
+      namespace: tap_jaffle_shop
+      variant: meltanolabs
+      pip_url: git+https://github.com/MeltanoLabs/tap-jaffle-shop.git@v0.3.0
+      capabilities:
+        - catalog
+        - discover
+      config:
+        years: 2
+        stream_name_prefix: ${JAFFLE_RAW_SCHEMA}-raw_
+  loaders:
+    - name: target-postgres
+      variant: datamill-co
+      pip_url: git+https://github.com/datamill-co/target-postgres.git@v0.1.0
+      config:
+        host: 127.0.0.1
+        user: postgres
+        password: ${SNOWFLAKE_PASSWORD}
+        default_target_schema: $JAFFLE_RAW_SCHEMA
+
+jobs:
+  # Sample usage:  `meltano run el`
+  # Equivalent to: `meltano run tap-jaffle-shop target-duckdb`
+  - name: el # Extract and load the raw data
+    tasks:
+      - tap-jaffle-shop target-postgres
