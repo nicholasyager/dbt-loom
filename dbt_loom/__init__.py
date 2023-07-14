@@ -42,9 +42,12 @@ class dbtLoom(dbtPlugin):
         self.plugins = [self.get_nodes]
 
         configuration_path = Path(os.environ.get('DBT_LOOM_CONFIG', 'dbt_loom.config.yml'))
-        config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
+        self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
+        self.models: Dict[str, ModelNodeArgs] = {}
 
-        self.models: Dict[str, ModelNodeArgs] = self.load_models(config) if config else {}
+    def initialize(self) -> None:
+        """Initialize the plugin"""
+        self.models = self.load_models(self.config) if self.config else {}
 
     def _load_manifest(self, manifest_configuration: ManifestConfig) -> Optional[Dict]:
         """Load a manifest based on the manifest configuration."""
