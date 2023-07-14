@@ -1,8 +1,8 @@
 name: PyPi Release
 
 on:
-  push:
-    branches: [ main ]
+  release:
+    types: [published]
 
 jobs:
   release:
