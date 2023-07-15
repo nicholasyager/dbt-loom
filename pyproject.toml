@@ -10,6 +10,8 @@ packages = [{include = "dbt_loom"}]
 python = ">=3.9,<3.12"
 dbt-postgres = "1.6.0-b8"
 
+[tool.ruff]
+line-length = 88
 
 [build-system]
 requires = ["poetry-core"]
