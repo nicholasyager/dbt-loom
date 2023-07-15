@@ -32,7 +32,7 @@ order by 1
 />
 
 ## Day of Week
-We can calculate average orders by day of week to check if there are differences in order volume across days. 
+We can calculate average orders by day of week to check if there are differences in order volume across days.
 
 ```orders_by_weekday
 select

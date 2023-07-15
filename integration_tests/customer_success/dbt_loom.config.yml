@@ -1,6 +1,0 @@
-manifests:
- - name: revenue
-   type: file
-   config:
-     path: /Users/nicholas/projects/nicholasyager/dbt-loom/integration_tests/revenue/target/manifest.json
-

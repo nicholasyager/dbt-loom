@@ -22,7 +22,7 @@ The {$page.params.city} location was opened in <Value data={opening.filter(d => 
 ```monthly_stats
 with
 monthly_stats as (
-    select 
+    select
         date_trunc('month', ordered_at) as month,
         location_name,
         sum(order_total) as revenue_usd1k,
@@ -34,7 +34,7 @@ monthly_stats as (
     order by month desc
 )
 
-select 
+select
     *,
     revenue_usd1k / (lag(revenue_usd1k, -1) over (order by month desc)) - 1 as revenue_growth_pct1,
     orders / (lag(orders, -1) over (order by month desc)) - 1 as order_growth_pct1,

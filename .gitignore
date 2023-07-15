@@ -17,5 +17,6 @@ reports/sources/*.csv
 .meltano
 
 __pycache__/
+.mypy_cache
 
 .DS_Store
