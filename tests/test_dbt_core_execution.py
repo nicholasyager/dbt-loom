@@ -11,10 +11,12 @@ def test_dbt_core_runs_loom_plugin():
     # Compile the revenue project
     starting_path = os.getcwd()
     os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["deps"])
     runner.invoke(["compile"])
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["ls"])
 
     # Make sure nothing failed
