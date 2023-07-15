@@ -3,6 +3,7 @@ venv/
 dist/
 
 .idea/
+.vscode/
 
 */target/
 */dbt_packages/

@@ -6,28 +6,37 @@ from typing import Dict, List, Optional, Set
 import networkx
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
-from dbt.plugins.manager import dbtPlugin, dbt_hook
+from dbt.logger import GLOBAL_LOGGER as logger
+from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
 from networkx import DiGraph
 from pydantic import BaseModel
-from dbt.logger import GLOBAL_LOGGER as logger
 
 
-class ManifestConfigType(str, Enum):
-    """Type of ManifestConfig"""
-    file = 'file'
+class ManifestReferenceType(str, Enum):
+    """Type of ManifestReference"""
+
+    file = "file"
 
 
-class ManifestConfig(BaseModel):
-    """Configuration for a manifest to be loaded into dbt-loom."""
+class FileReferenceConfig(BaseModel):
+    """Configuration for a file reference"""
 
-    path: Optional[str]
-    type: ManifestConfigType
+    path: Path
+
+
+class ManifestReference(BaseModel):
+    """Reference information for a manifest to be loaded into dbt-loom."""
+
+    name: str
+    type: ManifestReferenceType
+    config: FileReferenceConfig
 
 
 class dbtLoomConfig(BaseModel):
     """Configuration for dbt Loom"""
-    manifests: List[ManifestConfig]
+
+    manifests: List[ManifestReference]
 
 
 class dbtLoom(dbtPlugin):
@@ -37,41 +46,51 @@ class dbtLoom(dbtPlugin):
     """
 
     def __init__(self, project_name: str):
-        super().__init__(project_name)
-
         self.plugins = [self.get_nodes]
 
-        configuration_path = Path(os.environ.get('DBT_LOOM_CONFIG', 'dbt_loom.config.yml'))
+        configuration_path = Path(
+            os.environ.get("DBT_LOOM_CONFIG", "dbt_loom.config.yml")
+        )
         self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
         self.models: Dict[str, ModelNodeArgs] = {}
+
+        super().__init__(project_name)
 
     def initialize(self) -> None:
         """Initialize the plugin"""
         self.models = self.load_models(self.config) if self.config else {}
 
-    def _load_manifest(self, manifest_configuration: ManifestConfig) -> Optional[Dict]:
+    def _load_manifest(self, manifest_reference: ManifestReference) -> Optional[Dict]:
         """Load a manifest based on the manifest configuration."""
 
-        if manifest_configuration.type == ManifestConfigType.file:
-           return yaml.load(open(manifest_configuration.path), yaml.SafeLoader)
+        if manifest_reference.type == ManifestReferenceType.file:
+            if not manifest_reference.config.path:
+                return None
+
+            return yaml.load(open(manifest_reference.config.path), yaml.SafeLoader)
 
         return None
 
     @staticmethod
     def identify_public_node_subgraph(manifest) -> Set[str]:
-        """Identify all nodes that are ancestors of public nodes, and the public nodes themselves."""
+        """
+        Identify all nodes that are ancestors of public nodes, and the public nodes
+        themselves.
+        """
         graph: DiGraph = networkx.DiGraph()
         public_nodes = set()
         selected_nodes = set()
 
-        for unique_id, node in manifest['nodes'].items():
-            graph.add_edges_from([
-                (parent, unique_id)
-                for parent in node.get('depends_on', {'nodes': []}).get('nodes')
-                if not parent.startswith('source')
-            ])
+        for unique_id, node in manifest["nodes"].items():
+            graph.add_edges_from(
+                [
+                    (parent, unique_id)
+                    for parent in node.get("depends_on", {"nodes": []}).get("nodes")
+                    if not parent.startswith("source")
+                ]
+            )
 
-            if node.get('access', 'protected') == 'public':
+            if node.get("access", "protected") == "public":
                 public_nodes.add(unique_id)
         selected_nodes.update(public_nodes)
         for public_node in public_nodes:
@@ -82,39 +101,45 @@ class dbtLoom(dbtPlugin):
     def load_models(self, configuration: dbtLoomConfig) -> Dict[str, ModelNodeArgs]:
         output = {}
 
-        for manifest_configuration in configuration.manifests:
-
-            manifest = self._load_manifest(manifest_configuration)
+        for manifest_reference in configuration.manifests:
+            manifest = self._load_manifest(manifest_reference)
             if manifest is None:
                 continue
 
             selected_nodes = self.identify_public_node_subgraph(manifest)
 
             for unique_id in selected_nodes:
-                node = manifest.get('nodes', {}).get(unique_id)
+                node = manifest.get("nodes", {}).get(unique_id)
 
                 if node is None:
-                    logger.warning(f'Unable to find node {unique_id} in the manifest {manifest_configuration.path}')
+                    logger.warning(
+                        f"Unable to find node {unique_id} in the manifest "
+                        f"{manifest_reference.name}"
+                    )
                     continue
 
-                logger.warning(f'Injecting node `{unique_id}`')
+                logger.warning(f"Injecting node `{unique_id}`")
                 output[unique_id] = ModelNodeArgs(
-                    name=node.get('name'),
-                    package_name=node.get('package_name'),
-                    identifier=node.get('relation_name').split('.')[-1].replace('"', ''),
-                    schema=node.get('schema'),
-                    database=node.get('database'),
-                    relation_name=node.get('relation_name'),
-                    version=node.get('version'),
-                    latest_version=node.get('latest_version'),
-                    deprecation_date=node.get('deprecation_date'),
-                    access=node.get('access', 'public'),
-                    generated_at=node.get('created_at'),
-                    depends_on_nodes=list(filter(
-                        lambda x: not x.startswith('source'),
-                        node.get('depends_on', {'nodes': []}).get('nodes')
-                    )),
-                    enabled=node['config'].get('enabled')
+                    name=node.get("name"),
+                    package_name=node.get("package_name"),
+                    identifier=node.get("relation_name")
+                    .split(".")[-1]
+                    .replace('"', ""),
+                    schema=node.get("schema"),
+                    database=node.get("database"),
+                    relation_name=node.get("relation_name"),
+                    version=node.get("version"),
+                    latest_version=node.get("latest_version"),
+                    deprecation_date=node.get("deprecation_date"),
+                    access=node.get("access", "public"),
+                    generated_at=node.get("created_at"),
+                    depends_on_nodes=list(
+                        filter(
+                            lambda x: not x.startswith("source"),
+                            node.get("depends_on", {"nodes": []}).get("nodes"),
+                        )
+                    ),
+                    enabled=node["config"].get("enabled"),
                 )
 
         return output
