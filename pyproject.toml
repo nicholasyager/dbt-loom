@@ -8,6 +8,13 @@ packages = [{include = "dbt_loom"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
+dbt-core = "1.6.0-b8"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.278"
+pytest = "^7.4.0"
+isort = "^5.12.0"
+black = "^23.7.0"
 dbt-postgres = "1.6.0-b8"
 
 [tool.ruff]
