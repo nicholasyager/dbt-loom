@@ -20,8 +20,10 @@ upstream project's manifest files.
 
 ```yaml
 manifests:
-  - path: path/to/manifest.json
+  - name: project_name
     type: file
+    config:
+      path: path/to/manifest.json
 ```
 
 By default, `dbt-loom` will look for `dbt-loom.config.yml` in your working directory. You can also set the 
