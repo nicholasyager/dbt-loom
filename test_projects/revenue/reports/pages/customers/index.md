@@ -1,10 +1,10 @@
 # Customers
 
 ```customers
-select 
-    customer_name, 
+select
+    customer_name,
     concat('/customers/', customer_name) as customer_link,
-    count_lifetime_orders as lifetime_orders, 
+    count_lifetime_orders as lifetime_orders,
     lifetime_spend as lifetime_spend_usd,
     lifetime_spend / count_lifetime_orders as average_order_value_usd
 from analytics.customers

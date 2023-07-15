@@ -1,7 +1,7 @@
 # {$page.params.customer}'s Customer Profile
 
 ```customers
-select 
+select
     *,
     first_ordered_at as first_order_longdate,
     last_ordered_at as last_order_longdate,
@@ -29,8 +29,8 @@ group by month, customer_name
 order by month asc
 ```
 
-<BarChart 
-    data={monthly_purchases.filter(d => d.customer_name === $page.params.customer)} 
+<BarChart
+    data={monthly_purchases.filter(d => d.customer_name === $page.params.customer)}
     x=month
     y=purchases_usd
     title="Purchases per Month by {$page.params.customer}"

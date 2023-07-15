@@ -20,6 +20,11 @@ dbt-postgres = "1.6.0-b8"
 [tool.ruff]
 line-length = 88
 
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

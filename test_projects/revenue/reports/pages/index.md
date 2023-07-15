@@ -3,7 +3,7 @@
 ```monthly_stats
 with
 monthly_stats as (
-    select 
+    select
         date_trunc('month', ordered_at) as month,
         sum(order_total) as revenue_usd1k,
         count(*)::float as orders,
@@ -14,7 +14,7 @@ monthly_stats as (
     order by month desc
 )
 
-select 
+select
     *,
     revenue_usd1k / (lag(revenue_usd1k, -1) over (order by month desc)) - 1 as revenue_growth_pct1,
     orders / (lag(orders, -1) over (order by month desc)) - 1 as order_growth_pct1,
@@ -44,7 +44,7 @@ Jaffle Shop locations served <Value data={monthly_stats} column=customers/> happ
 ## Store Openings
 
 ```store_opening
-with 
+with
 most_recent_open as (
   select
       location_name as opened_store,
@@ -57,14 +57,14 @@ most_recent_open as (
 ),
 
 company_total as (
-  select 
+  select
     sum(order_total) as company_revenue_usd,
   from analytics.orders
   cross join most_recent_open
   where ordered_at >= opened_date_mmmyyyy
 )
 
-select 
+select
   *,
   opened_revenue_usd / company_revenue_usd as revenue_pct
 from most_recent_open
@@ -120,7 +120,7 @@ See [Seasonality Investigation](/analysis/seasonality-investigation) for more in
 To see individual customer purchase history, see [Customers](/customers)
 
 ### Customer Cohorts
-Average order values are tracked using monthly cohorts, which are created by truncating `first_order_date` to month. 
+Average order values are tracked using monthly cohorts, which are created by truncating `first_order_date` to month.
 
 ```customers_with_cohort
 select

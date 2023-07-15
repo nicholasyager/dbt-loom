@@ -1,0 +1,6 @@
+manifests:
+ - name: revenue
+   type: file
+   config:
+     path: ../revenue/target/manifest.json
+
