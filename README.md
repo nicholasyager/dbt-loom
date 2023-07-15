@@ -1,4 +1,7 @@
 # dbt-loom
+![pypi version shield](https://img.shields.io/pypi/v/dbt-loom)
+
+
 A dbt-core plugin to support multi-project deployments.
 
 :warning: **This package depends on dbt-core's plugin functionality, which is still in beta. Please note that this may 
