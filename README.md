@@ -1,5 +1,5 @@
 # dbt-loom
-![pypi version shield](https://img.shields.io/pypi/v/dbt-loom)
+[![pypi version shield](https://img.shields.io/pypi/v/dbt-loom)](https://pypi.org/project/dbt-loom/)
 
 
 A dbt-core plugin to support multi-project deployments.
