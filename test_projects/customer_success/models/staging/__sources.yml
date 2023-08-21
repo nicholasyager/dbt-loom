@@ -6,4 +6,6 @@ sources:
     description: E-commerce data
     tables:
       - name: raw_customers
+        meta:
+          external_location: "read_csv('jaffle-data/raw_customers.csv', names=['id', 'name'],AUTO_DETECT=TRUE)"
         description: One record per person who has purchased one or more items

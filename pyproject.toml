@@ -4,32 +4,29 @@ version = "0.1.1"
 description = "A dbt-core plugin to import public nodes in multi-project deployments."
 authors = ["Nicholas Yager <yager@nicholasyager.com>"]
 readme = "README.md"
-packages = [{include = "dbt_loom"}]
+packages = [{ include = "dbt_loom" }]
 
 [tool.commitizen]
 version = "0.1.1"
-version_files = [
-    "pyproject.toml:^version"
-]
+version_files = ["pyproject.toml:^version"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-dbt-core = "1.6.0-b8"
+dbt-core = "1.6.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.278"
 pytest = "^7.4.0"
 isort = "^5.12.0"
 black = "^23.7.0"
-dbt-postgres = "1.6.0-b8"
+dbt-duckdb = "1.6.0"
+duckdb = ">=0.8.0"
 
 [tool.ruff]
 line-length = 88
 
 [tool.pytest.ini_options]
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core"]
