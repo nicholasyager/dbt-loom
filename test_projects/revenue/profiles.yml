@@ -1,12 +1,7 @@
-postgres:
+revenue:
   outputs:
     dev:
-      type: postgres
-      host: 127.0.0.1
-      user: postgres
-      password: postgres
-      port: 5432
-      database: postgres
-      schema: public
+      type: duckdb
+      path: ../database.db
       threads: 4
   target: dev

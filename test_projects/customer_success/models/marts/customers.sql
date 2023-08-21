@@ -14,7 +14,7 @@ customers as (
 
 orders_mart as (
 
-    select * from {{ ref('orders') }}
+    select * from {{ ref('revenue', 'orders') }}
 
 ),
 

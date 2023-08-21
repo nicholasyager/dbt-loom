@@ -16,6 +16,7 @@ logs/
 *.duckdb
 *.duckdb.wal
 *.user.yml
+*.db
 
 reports/sources/*.csv
 .meltano

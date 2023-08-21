@@ -6,12 +6,22 @@ sources:
     description: E-commerce data
     tables:
       - name: raw_orders
+        meta:
+          external_location: "read_csv('jaffle-data/raw_orders.csv',AUTO_DETECT=TRUE)"
         description: One record per order (consisting of one or more order items)
       - name: raw_items
+        meta:
+          external_location: "read_csv('jaffle-data/raw_items.csv', names=['id', 'order_id', 'sku'], AUTO_DETECT=TRUE)"
         description: Items included in an order
       - name: raw_stores
+        meta:
+          external_location: "read_csv('jaffle-data/raw_stores.csv',AUTO_DETECT=TRUE)"
         description: One record per physical store location
       - name: raw_products
+        meta:
+          external_location: "read_csv('jaffle-data/raw_products.csv',AUTO_DETECT=TRUE)"
         description: One record per SKU for items sold in stores
       - name: raw_supplies
+        meta:
+          external_location: "read_csv('jaffle-data/raw_supplies.csv',AUTO_DETECT=TRUE)"
         description: One record per supply per SKU of items sold in stores

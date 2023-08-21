@@ -2,7 +2,7 @@ import json
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 import networkx
 import yaml
@@ -85,9 +85,6 @@ def identify_public_node_subgraph(manifest) -> Dict[str, Any]:
             public_nodes.add(unique_id)
     selected_node_ids.update(public_nodes)
 
-    for public_node in public_nodes:
-        selected_node_ids.update(networkx.ancestors(graph, public_node))
-
     return {
         unique_id: manifest.get("nodes", {}).get(unique_id)
         for unique_id in selected_node_ids
@@ -112,10 +109,10 @@ def convert_model_nodes_to_model_node_args(
             access=node.get("access", "public"),
             generated_at=node.get("created_at"),
             depends_on_nodes=list(
-                filter(
-                    lambda x: x.startswith("model"),
-                    node.get("depends_on", {"nodes": []}).get("nodes"),
-                )
+                # filter(
+                #     lambda x: x.startswith("model"),
+                #     node.get("depends_on", {"nodes": []}).get("nodes"),
+                # )
             ),
             enabled=node["config"].get("enabled"),
         )
@@ -152,6 +149,8 @@ class dbtLoom(dbtPlugin):
     def initialize(self) -> None:
         """Initialize the plugin"""
 
+        print("Initializing dbt-loom")
+
         if self.models != {} or not self.config:
             return
 
@@ -163,11 +162,15 @@ class dbtLoom(dbtPlugin):
             selected_nodes = identify_public_node_subgraph(manifest)
             self.models.update(convert_model_nodes_to_model_node_args(selected_nodes))
 
+        for key, value in self.models.items():
+            print(key, value)
+
     @dbt_hook
     def get_nodes(self) -> PluginNodes:
         """
         Inject PluginNodes to dbt for injection into dbt's DAG.
         """
+        print("injecting nodes")
         return PluginNodes(models=self.models)
 
 
