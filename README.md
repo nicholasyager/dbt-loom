@@ -34,7 +34,7 @@ flowchart LR
 dbt-loom currently supports obtaining model definitions from:
 
 - Local manifest files
-- dbt Cloud [TODO]
+- dbt Cloud
 - S3-compatible object storage services [TODO]
 
 :warning: **dbt Core's plugin functionality is still in beta. Please note that this may break in the future as dbt Labs solidifies the dbt plugin API in future versions.**
@@ -60,6 +60,29 @@ manifests:
 
 By default, `dbt-loom` will look for `dbt-loom.config.yml` in your working directory. You can also set the
 `DBT_LOOM_CONFIG_PATH` environment variable.
+
+### Using dbt Cloud as an artifact source
+
+You can use dbt-loom to fetch model definitions from dbt Cloud by setting uo a `dbt-cloud` manifest in your `dbt-loom` config.
+
+```yaml
+manifests:
+  - name: project_name
+    type: dbt_cloud
+    config:
+      account_id: <YOUR DBT CLOUD ACCOUNT ID>
+
+      # Job ID pertains to the job that you'd like to fetch artifacts from
+      job_id: <REFERENCE JOB ID>
+
+      api_endpoint: <DBT CLOUD ENDPOINT>
+      # dbt Cloud has multiple regions with different URLs. Update this to
+      # your appropriate dbt cloud endpoint.
+
+      step_id: <JOB STEP>
+      # If your job generates multiple artifacts, you can set the step from
+      # which to fetch artifacts. Defaults to the last step.
+```
 
 ## How does it work?
 

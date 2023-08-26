@@ -13,6 +13,7 @@ version_files = ["pyproject.toml:^version"]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
 dbt-core = "1.6.0"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.278"
