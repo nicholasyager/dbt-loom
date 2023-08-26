@@ -63,7 +63,7 @@ By default, `dbt-loom` will look for `dbt-loom.config.yml` in your working direc
 
 ### Using dbt Cloud as an artifact source
 
-You can use dbt-loom to fetch model definitions from dbt Cloud by setting uo a `dbt-cloud` manifest in your `dbt-loom` config.
+You can use dbt-loom to fetch model definitions from dbt Cloud by setting up a `dbt-cloud` manifest in your `dbt-loom` config, and setting the `DBT_CLOUD_API_TOKEN` environment variable in your execution environment.
 
 ```yaml
 manifests:
