@@ -1,6 +1,5 @@
 manifests:
- - name: revenue
-   type: file
-   config:
-     path: ../revenue/target/manifest.json
-
+  - name: revenue
+    type: file
+    config:
+      path: ../revenue/target/manifest.json

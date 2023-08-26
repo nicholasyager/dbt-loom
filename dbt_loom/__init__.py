@@ -2,9 +2,9 @@ import json
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
-import networkx
+
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
 from dbt.plugins.manager import dbt_hook, dbtPlugin
@@ -12,11 +12,14 @@ from dbt.plugins.manifest import PluginNodes
 from networkx import DiGraph
 from pydantic import BaseModel
 
+from .clients.dbt_cloud import DbtCloud
+
 
 class ManifestReferenceType(str, Enum):
     """Type of ManifestReference"""
 
     file = "file"
+    dbt_cloud = "dbt_cloud"
 
 
 class FileReferenceConfig(BaseModel):
@@ -25,12 +28,21 @@ class FileReferenceConfig(BaseModel):
     path: Path
 
 
+class DbtCloudReferenceConfig(BaseModel):
+    """Configuration for a dbt Cloud reference."""
+
+    account_id: int
+    job_id: int
+    api_endpoint: Optional[str] = None
+    step: Optional[int] = None
+
+
 class ManifestReference(BaseModel):
     """Reference information for a manifest to be loaded into dbt-loom."""
 
     name: str
     type: ManifestReferenceType
-    config: FileReferenceConfig
+    config: Union[FileReferenceConfig, DbtCloudReferenceConfig]
 
 
 class dbtLoomConfig(BaseModel):
@@ -44,22 +56,40 @@ class LoomConfigurationError(BaseException):
 
 
 class ManifestLoader:
-    @staticmethod
-    def load_from_local_filesystem(path: Path) -> Dict:
-        """Load a manifest dictionary from a local file"""
-        if not path.exists():
-            raise LoomConfigurationError(f"The path `{path}` does not exist.")
+    def __init__(self):
+        self.loading_functions = {
+            ManifestReferenceType.file: self.load_from_local_filesystem,
+            ManifestReferenceType.dbt_cloud: self.load_from_dbt_cloud,
+        }
 
-        return json.load(open(path))
+    @staticmethod
+    def load_from_local_filesystem(config: FileReferenceConfig) -> Dict:
+        """Load a manifest dictionary from a local file"""
+        if not config.path.exists():
+            raise LoomConfigurationError(f"The path `{config.path}` does not exist.")
+
+        return json.load(open(config.path))
+
+    @staticmethod
+    def load_from_dbt_cloud(config: DbtCloudReferenceConfig) -> Dict:
+        """Load a manifest dictionary from dbt Cloud."""
+        client = DbtCloud(
+            account_id=config.account_id, api_endpoint=config.api_endpoint
+        )
+
+        return client.get_models(config.job_id, step=config.step)
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""
-        if manifest_reference.type == ManifestReferenceType.file:
-            return self.load_from_local_filesystem(manifest_reference.config.path)
 
-        raise LoomConfigurationError(
-            f"The manifest reference provided for {manifest_reference.name} does not "
-            "have a valid type."
+        if manifest_reference.type not in self.loading_functions:
+            raise LoomConfigurationError(
+                f"The manifest reference provided for {manifest_reference.name} does "
+                "not have a valid type."
+            )
+
+        return self.loading_functions[manifest_reference.type](
+            manifest_reference.config
         )
 
 
@@ -68,7 +98,7 @@ def identify_public_node_subgraph(manifest) -> Dict[str, Any]:
     Identify all nodes that are ancestors of public nodes, and the public nodes
     themselves.
     """
-    graph: DiGraph = networkx.DiGraph()
+    graph: DiGraph = DiGraph()
     public_nodes = set()
     selected_node_ids = set()
 
@@ -76,7 +106,7 @@ def identify_public_node_subgraph(manifest) -> Dict[str, Any]:
         graph.add_edges_from(
             [
                 (parent, unique_id)
-                for parent in node.get("depends_on", {"nodes": []}).get("nodes")
+                for parent in node.get("depends_on", {"nodes": []}).get("nodes", [])
                 if parent.startswith("model")
             ]
         )
@@ -108,12 +138,7 @@ def convert_model_nodes_to_model_node_args(
             deprecation_date=node.get("deprecation_date"),
             access=node.get("access", "public"),
             generated_at=node.get("created_at"),
-            depends_on_nodes=list(
-                # filter(
-                #     lambda x: x.startswith("model"),
-                #     node.get("depends_on", {"nodes": []}).get("nodes"),
-                # )
-            ),
+            depends_on_nodes=list(),
             enabled=node["config"].get("enabled"),
         )
         for unique_id, node in selected_nodes.items()
@@ -153,6 +178,8 @@ class dbtLoom(dbtPlugin):
 
         if self.models != {} or not self.config:
             return
+
+        print(self.config.manifests)
 
         for manifest_reference in self.config.manifests:
             manifest = self._manifest_loader.load(manifest_reference)
