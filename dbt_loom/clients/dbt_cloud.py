@@ -13,7 +13,16 @@ class DbtCloud:
         token: Optional[str] = None,
         api_endpoint: Optional[str] = None,
     ) -> None:
-        self.__token = token or os.environ.get("DBT_CLOUD_API_TOKEN")
+        resolved_token = token or os.environ.get("DBT_CLOUD_API_TOKEN")
+        if resolved_token is None:
+            raise Exception(
+                "A DBT Cloud token must be provided to dbt-loom when fetching manifest "
+                "data from dbt Cloud. Please provide one via the `DBT_CLOUD_API_TOKEN` "
+                "environment variable."
+            )
+
+        self.__token: str = resolved_token
+
         self.account_id = account_id
         self.api_endpoint = api_endpoint or "https://cloud.getdbt.com/api/v2"
 
