@@ -58,7 +58,7 @@ manifests:
       path: path/to/manifest.json
 ```
 
-By default, `dbt-loom` will look for `dbt-loom.config.yml` in your working directory. You can also set the
+By default, `dbt-loom` will look for `dbt_loom.config.yml` in your working directory. You can also set the
 `DBT_LOOM_CONFIG_PATH` environment variable.
 
 ### Using dbt Cloud as an artifact source
