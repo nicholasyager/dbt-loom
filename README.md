@@ -84,6 +84,25 @@ manifests:
       # which to fetch artifacts. Defaults to the last step.
 ```
 
+### Using GCS as an artifact source
+
+You can use dbt-loom to fetch manifest files from Google Cloud Storage by setting up a `gcs` manifest in your `dbt-loom` config.
+
+```yaml
+manifests:
+  - name: project_name
+    type: gcs
+    config:
+      bucket_name: <YOUR GCS BUCKET NAME>
+      # The name of the bucket where your manifest is stored
+      
+      blob_name: <YOUR BLOB NAME>
+      # The blob name of your manifest file
+
+      credentials: <YOUR SERVICE ACCOUNT JSON CREDENTIALS>
+      # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
+```
+
 ## How does it work?
 
 As of dbt-core 1.6.0-b8, there now exists a `dbtPlugin` class which defines functions that can

@@ -13,6 +13,7 @@ from networkx import DiGraph
 from pydantic import BaseModel
 
 from .clients.dbt_cloud import DbtCloud
+from .clients.gcs import GCSClient
 
 
 class ManifestReferenceType(str, Enum):
@@ -20,6 +21,7 @@ class ManifestReferenceType(str, Enum):
 
     file = "file"
     dbt_cloud = "dbt_cloud"
+    gcs = "gcs"
 
 
 class FileReferenceConfig(BaseModel):
@@ -36,13 +38,19 @@ class DbtCloudReferenceConfig(BaseModel):
     api_endpoint: Optional[str] = None
     step: Optional[int] = None
 
+class GCSReferenceConfig(BaseModel):
+    """Configuration for a GCS reference"""
+    
+    bucket_name: str
+    blob_name: str
+    credentials: Optional[str] = None
 
 class ManifestReference(BaseModel):
     """Reference information for a manifest to be loaded into dbt-loom."""
 
     name: str
     type: ManifestReferenceType
-    config: Union[FileReferenceConfig, DbtCloudReferenceConfig]
+    config: Union[FileReferenceConfig, DbtCloudReferenceConfig, GCSReferenceConfig]
 
 
 class dbtLoomConfig(BaseModel):
@@ -60,6 +68,7 @@ class ManifestLoader:
         self.loading_functions = {
             ManifestReferenceType.file: self.load_from_local_filesystem,
             ManifestReferenceType.dbt_cloud: self.load_from_dbt_cloud,
+            ManifestReferenceType.gcs: self.load_from_gcs,
         }
 
     @staticmethod
@@ -78,6 +87,17 @@ class ManifestLoader:
         )
 
         return client.get_models(config.job_id, step=config.step)
+
+    @staticmethod
+    def load_from_gcs(config: GCSReferenceConfig) -> Dict:
+        """Load a manifest dictionary from a GCS bucket."""
+        gcs_client = GCSClient(
+            bucket_name=config.bucket_name,
+            blob_name=config.blob_name,
+            credentials=config.credentials
+        )
+        
+        return gcs_client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""
