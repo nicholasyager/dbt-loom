@@ -23,5 +23,10 @@ class GCSClient:
         blob = bucket.get_blob(self.blob_name)
         if not blob:
             raise Exception(f"The blob `{self.blob_name}` does not exist in bucket `{self.bucket_name}`.")
+        
         manifest_json = blob.download_as_text()
-        return json.loads(manifest_json)
+        
+        try:
+            return json.loads(manifest_json)
+        except:
+            raise Exception(f"The blob `{self.blob_name}` is not a valid JSON.")
