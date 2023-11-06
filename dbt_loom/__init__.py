@@ -42,8 +42,8 @@ class GCSReferenceConfig(BaseModel):
     """Configuration for a GCS reference"""
     
     bucket_name: str
-    blob_name: str
-    credentials: Optional[str] = None
+    object_name: str
+    credentials: Optional[Path] = None
 
 class ManifestReference(BaseModel):
     """Reference information for a manifest to be loaded into dbt-loom."""
@@ -93,7 +93,7 @@ class ManifestLoader:
         """Load a manifest dictionary from a GCS bucket."""
         gcs_client = GCSClient(
             bucket_name=config.bucket_name,
-            blob_name=config.blob_name,
+            object_name=config.object_name,
             credentials=config.credentials
         )
         

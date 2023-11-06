@@ -97,10 +97,10 @@ manifests:
       bucket_name: <YOUR GCS BUCKET NAME>
       # The name of the bucket where your manifest is stored
       
-      blob_name: <YOUR BLOB NAME>
-      # The blob name of your manifest file
+      object_name: <YOUR OBJECT NAME>
+      # The object name of your manifest file
 
-      credentials: <YOUR SERVICE ACCOUNT JSON CREDENTIALS>
+      credentials: <PATH TO YOUR SERVICE ACCOUNT JSON CREDENTIALS>
       # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
 ```
 
