@@ -4,7 +4,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
 from dbt.plugins.manager import dbt_hook, dbtPlugin
@@ -38,12 +37,14 @@ class DbtCloudReferenceConfig(BaseModel):
     api_endpoint: Optional[str] = None
     step: Optional[int] = None
 
+
 class GCSReferenceConfig(BaseModel):
     """Configuration for a GCS reference"""
-    
+
     bucket_name: str
     object_name: str
     credentials: Optional[Path] = None
+
 
 class ManifestReference(BaseModel):
     """Reference information for a manifest to be loaded into dbt-loom."""
@@ -94,9 +95,9 @@ class ManifestLoader:
         gcs_client = GCSClient(
             bucket_name=config.bucket_name,
             object_name=config.object_name,
-            credentials=config.credentials
+            credentials=config.credentials,
         )
-        
+
         return gcs_client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Dict:

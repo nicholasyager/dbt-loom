@@ -73,7 +73,7 @@ manifests:
     config:
       account_id: <YOUR DBT CLOUD ACCOUNT ID>
 
-      # Job ID pertains to the job that you'd like to fetch artifacts from
+      # Job ID pertains to the job that you'd like to fetch artifacts from.
       job_id: <REFERENCE JOB ID>
 
       api_endpoint: <DBT CLOUD ENDPOINT>
@@ -95,10 +95,10 @@ manifests:
     type: gcs
     config:
       bucket_name: <YOUR GCS BUCKET NAME>
-      # The name of the bucket where your manifest is stored
-      
+      # The name of the bucket where your manifest is stored.
+
       object_name: <YOUR OBJECT NAME>
-      # The object name of your manifest file
+      # The object name of your manifest file.
 
       credentials: <PATH TO YOUR SERVICE ACCOUNT JSON CREDENTIALS>
       # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
