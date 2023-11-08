@@ -150,7 +150,7 @@ def convert_model_nodes_to_model_node_args(
         unique_id: ModelNodeArgs(
             name=node.get("name"),
             package_name=node.get("package_name"),
-            identifier=node.get("relation_name").split(".")[-1].replace('"', ""),
+            identifier=node.get("relation_name").split(".")[-1].replace('"', "").replace('`',""),
             schema=node.get("schema"),
             database=node.get("database"),
             relation_name=node.get("relation_name"),
