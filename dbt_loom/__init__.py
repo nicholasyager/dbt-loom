@@ -3,6 +3,7 @@ import os
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+import re
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -192,7 +193,18 @@ class dbtLoom(dbtPlugin):
         if not path.exists():
             return None
 
-        return dbtLoomConfig(**yaml.load(open(path), yaml.SafeLoader))
+        with open(path) as file:
+            config_content = file.read()
+        
+        config_content = self.replace_env_variables(config_content)
+
+        return dbtLoomConfig(**yaml.load(config_content, yaml.SafeLoader))
+    
+    @staticmethod
+    def replace_env_variables(config_str: str) -> str:
+        """Replace environment variable placeholders in the configuration string."""
+        pattern = r'\$(\w+)|\$\{([^}]+)\}'
+        return re.sub(pattern, lambda match: os.environ.get(match.group(1) if match.group(1) is not None else match.group(2), ''), config_str)
 
     def initialize(self) -> None:
         """Initialize the plugin"""
