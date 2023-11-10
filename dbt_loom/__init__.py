@@ -1,9 +1,9 @@
 import json
 import os
+import re
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-import re
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -153,7 +153,10 @@ def convert_model_nodes_to_model_node_args(
         unique_id: ModelNodeArgs(
             name=node.get("name"),
             package_name=node.get("package_name"),
-            identifier=node.get("relation_name").split(".")[-1].replace('"', "").replace('`',""),
+            identifier=node.get("relation_name")
+            .split(".")[-1]
+            .replace('"', "")
+            .replace('`', ""),
             schema=node.get("schema"),
             database=node.get("database"),
             relation_name=node.get("relation_name"),
@@ -195,16 +198,22 @@ class dbtLoom(dbtPlugin):
 
         with open(path) as file:
             config_content = file.read()
-        
+
         config_content = self.replace_env_variables(config_content)
 
         return dbtLoomConfig(**yaml.load(config_content, yaml.SafeLoader))
-    
+
     @staticmethod
     def replace_env_variables(config_str: str) -> str:
         """Replace environment variable placeholders in the configuration string."""
         pattern = r'\$(\w+)|\$\{([^}]+)\}'
-        return re.sub(pattern, lambda match: os.environ.get(match.group(1) if match.group(1) is not None else match.group(2), ''), config_str)
+        return re.sub(
+            pattern,
+            lambda match: os.environ.get(
+                match.group(1) if match.group(1) is not None else match.group(2), ''
+            ),
+            config_str,
+        )
 
     def initialize(self) -> None:
         """Initialize the plugin"""

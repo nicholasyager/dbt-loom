@@ -23,7 +23,9 @@ class GCSClient:
     def load_manifest(self) -> Dict:
         """Load a manifest json from a GCS bucket."""
         client = (
-            storage.Client.from_service_account_json(self.credentials, project=self.project_id)
+            storage.Client.from_service_account_json(
+                self.credentials, project=self.project_id
+            )
             if self.credentials
             else storage.Client(project=self.project_id)
         )
