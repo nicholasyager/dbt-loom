@@ -41,6 +41,7 @@ class DbtCloudReferenceConfig(BaseModel):
 class GCSReferenceConfig(BaseModel):
     """Configuration for a GCS reference"""
 
+    project_id: str
     bucket_name: str
     object_name: str
     credentials: Optional[Path] = None
@@ -93,6 +94,7 @@ class ManifestLoader:
     def load_from_gcs(config: GCSReferenceConfig) -> Dict:
         """Load a manifest dictionary from a GCS bucket."""
         gcs_client = GCSClient(
+            project_id=config.project_id,
             bucket_name=config.bucket_name,
             object_name=config.object_name,
             credentials=config.credentials,

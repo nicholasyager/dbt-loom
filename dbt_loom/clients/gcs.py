@@ -10,10 +10,12 @@ class GCSClient:
 
     def __init__(
         self,
+        project_id: str,
         bucket_name: str,
         object_name: str,
         credentials: Optional[Path] = None,
     ) -> None:
+        self.project_id = project_id
         self.bucket_name = bucket_name
         self.object_name = object_name
         self.credentials = credentials
@@ -21,9 +23,9 @@ class GCSClient:
     def load_manifest(self) -> Dict:
         """Load a manifest json from a GCS bucket."""
         client = (
-            storage.Client.from_service_account_json(self.credentials)
+            storage.Client.from_service_account_json(self.credentials, project=self.project_id)
             if self.credentials
-            else storage.Client()
+            else storage.Client(project=self.project_id)
         )
         bucket = client.get_bucket(self.bucket_name)
         blob = bucket.get_blob(self.object_name)
