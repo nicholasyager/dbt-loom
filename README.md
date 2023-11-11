@@ -35,6 +35,7 @@ dbt-loom currently supports obtaining model definitions from:
 
 - Local manifest files
 - dbt Cloud
+- GCS
 - S3-compatible object storage services [TODO]
 
 :warning: **dbt Core's plugin functionality is still in beta. Please note that this may break in the future as dbt Labs solidifies the dbt plugin API in future versions.**
@@ -72,7 +73,7 @@ manifests:
     config:
       account_id: <YOUR DBT CLOUD ACCOUNT ID>
 
-      # Job ID pertains to the job that you'd like to fetch artifacts from
+      # Job ID pertains to the job that you'd like to fetch artifacts from.
       job_id: <REFERENCE JOB ID>
 
       api_endpoint: <DBT CLOUD ENDPOINT>
@@ -82,6 +83,46 @@ manifests:
       step_id: <JOB STEP>
       # If your job generates multiple artifacts, you can set the step from
       # which to fetch artifacts. Defaults to the last step.
+```
+
+### Using GCS as an artifact source
+
+You can use dbt-loom to fetch manifest files from Google Cloud Storage by setting up a `gcs` manifest in your `dbt-loom` config.
+
+```yaml
+manifests:
+  - name: project_name
+    type: gcs
+    config:
+      project_id: <YOUR GCP PROJECT ID>
+      # The alphanumeric ID of the GCP project that contains your target bucket.
+
+      bucket_name: <YOUR GCS BUCKET NAME>
+      # The name of the bucket where your manifest is stored.
+
+      object_name: <YOUR OBJECT NAME>
+      # The object name of your manifest file.
+
+      credentials: <PATH TO YOUR SERVICE ACCOUNT JSON CREDENTIALS>
+      # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
+```
+
+### Using environment variables
+
+You can easily incorporate your own environment variables into the config file. This allows for dynamic configuration values that can change based on the environment. To specify an environment variable in the `dbt-loom` config file, use one of the following formats:
+
+`${ENV_VAR}` or `$ENV_VAR`
+
+#### Example:
+
+```yaml
+manifests:
+  - name: revenue
+    type: gcs
+    config:
+      project_id: ${GCP_PROJECT}
+      bucket_name: ${GCP_BUCKET}
+      object_name: ${MANIFEST_PATH}
 ```
 
 ## How does it work?

@@ -1,9 +1,9 @@
 import json
 import os
+import re
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -13,6 +13,7 @@ from networkx import DiGraph
 from pydantic import BaseModel
 
 from .clients.dbt_cloud import DbtCloud
+from .clients.gcs import GCSClient
 
 
 class ManifestReferenceType(str, Enum):
@@ -20,6 +21,7 @@ class ManifestReferenceType(str, Enum):
 
     file = "file"
     dbt_cloud = "dbt_cloud"
+    gcs = "gcs"
 
 
 class FileReferenceConfig(BaseModel):
@@ -37,12 +39,21 @@ class DbtCloudReferenceConfig(BaseModel):
     step: Optional[int] = None
 
 
+class GCSReferenceConfig(BaseModel):
+    """Configuration for a GCS reference"""
+
+    project_id: str
+    bucket_name: str
+    object_name: str
+    credentials: Optional[Path] = None
+
+
 class ManifestReference(BaseModel):
     """Reference information for a manifest to be loaded into dbt-loom."""
 
     name: str
     type: ManifestReferenceType
-    config: Union[FileReferenceConfig, DbtCloudReferenceConfig]
+    config: Union[FileReferenceConfig, DbtCloudReferenceConfig, GCSReferenceConfig]
 
 
 class dbtLoomConfig(BaseModel):
@@ -60,6 +71,7 @@ class ManifestLoader:
         self.loading_functions = {
             ManifestReferenceType.file: self.load_from_local_filesystem,
             ManifestReferenceType.dbt_cloud: self.load_from_dbt_cloud,
+            ManifestReferenceType.gcs: self.load_from_gcs,
         }
 
     @staticmethod
@@ -78,6 +90,18 @@ class ManifestLoader:
         )
 
         return client.get_models(config.job_id, step=config.step)
+
+    @staticmethod
+    def load_from_gcs(config: GCSReferenceConfig) -> Dict:
+        """Load a manifest dictionary from a GCS bucket."""
+        gcs_client = GCSClient(
+            project_id=config.project_id,
+            bucket_name=config.bucket_name,
+            object_name=config.object_name,
+            credentials=config.credentials,
+        )
+
+        return gcs_client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""
@@ -129,7 +153,10 @@ def convert_model_nodes_to_model_node_args(
         unique_id: ModelNodeArgs(
             name=node.get("name"),
             package_name=node.get("package_name"),
-            identifier=node.get("relation_name").split(".")[-1].replace('"', ""),
+            identifier=node.get("relation_name")
+            .split(".")[-1]
+            .replace('"', "")
+            .replace('`', ""),
             schema=node.get("schema"),
             database=node.get("database"),
             relation_name=node.get("relation_name"),
@@ -169,7 +196,24 @@ class dbtLoom(dbtPlugin):
         if not path.exists():
             return None
 
-        return dbtLoomConfig(**yaml.load(open(path), yaml.SafeLoader))
+        with open(path) as file:
+            config_content = file.read()
+
+        config_content = self.replace_env_variables(config_content)
+
+        return dbtLoomConfig(**yaml.load(config_content, yaml.SafeLoader))
+
+    @staticmethod
+    def replace_env_variables(config_str: str) -> str:
+        """Replace environment variable placeholders in the configuration string."""
+        pattern = r'\$(\w+)|\$\{([^}]+)\}'
+        return re.sub(
+            pattern,
+            lambda match: os.environ.get(
+                match.group(1) if match.group(1) is not None else match.group(2), ''
+            ),
+            config_str,
+        )
 
     def initialize(self) -> None:
         """Initialize the plugin"""
