@@ -94,6 +94,9 @@ manifests:
   - name: project_name
     type: gcs
     config:
+      project_id: <YOUR GCP PROJECT ID>
+      # The alphanumeric ID of the GCP project that contains your target bucket.
+
       bucket_name: <YOUR GCS BUCKET NAME>
       # The name of the bucket where your manifest is stored.
 
@@ -102,6 +105,24 @@ manifests:
 
       credentials: <PATH TO YOUR SERVICE ACCOUNT JSON CREDENTIALS>
       # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
+```
+
+### Using environment variables
+
+You can easily incorporate your own environment variables into the config file. This allows for dynamic configuration values that can change based on the environment. To specify an environment variable in the `dbt-loom` config file, use one of the following formats:
+
+`${ENV_VAR}` or `$ENV_VAR`
+
+#### Example:
+
+```yaml
+manifests:
+  - name: revenue
+    type: gcs
+    config:
+      project_id: ${GCP_PROJECT}
+      bucket_name: ${GCP_BUCKET}
+      object_name: ${MANIFEST_PATH}
 ```
 
 ## How does it work?
