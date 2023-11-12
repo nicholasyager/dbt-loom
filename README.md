@@ -85,6 +85,24 @@ manifests:
       # which to fetch artifacts. Defaults to the last step.
 ```
 
+### Using an S3-compatible object store as an artifact source
+
+You can use dbt-loom to fetch manifest files from S3-compatible object stores
+by setting up ab `s3` manifest in your `dbt-loom` config. Please note that this
+approach supports all standard boto3-compatible environment variables and authentication mechanisms. Please see the [boto3 documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#environment-variables) for more details.
+
+```yaml
+manifests:
+  - name: project_name
+    type: s3
+    config:
+      bucket_name: <YOUR S3 BUCKET NAME>
+      # The name of the bucket where your manifest is stored.
+
+      object_name: <YOUR OBJECT NAME>
+      # The object name of your manifest file.
+```
+
 ### Using GCS as an artifact source
 
 You can use dbt-loom to fetch manifest files from Google Cloud Storage by setting up a `gcs` manifest in your `dbt-loom` config.
