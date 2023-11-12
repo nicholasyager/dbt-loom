@@ -36,7 +36,7 @@ dbt-loom currently supports obtaining model definitions from:
 - Local manifest files
 - dbt Cloud
 - GCS
-- S3-compatible object storage services [TODO]
+- S3-compatible object storage services
 
 :warning: **dbt Core's plugin functionality is still in beta. Please note that this may break in the future as dbt Labs solidifies the dbt plugin API in future versions.**
 
