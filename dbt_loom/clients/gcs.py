@@ -40,5 +40,7 @@ class GCSClient:
 
         try:
             return json.loads(manifest_json)
-        except:
-            raise Exception(f"The object `{self.object_name}` is not a valid JSON.")
+        except Exception:
+            raise Exception(
+                f"The object `{self.object_name}` does not contain valid JSON."
+            )

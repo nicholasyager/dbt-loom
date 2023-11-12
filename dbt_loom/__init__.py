@@ -12,6 +12,8 @@ from dbt.plugins.manifest import PluginNodes
 from networkx import DiGraph
 from pydantic import BaseModel
 
+from dbt_loom.clients.s3 import S3Client
+
 from .clients.dbt_cloud import DbtCloud
 from .clients.gcs import GCSClient
 
@@ -22,6 +24,7 @@ class ManifestReferenceType(str, Enum):
     file = "file"
     dbt_cloud = "dbt_cloud"
     gcs = "gcs"
+    s3 = "s3"
 
 
 class FileReferenceConfig(BaseModel):
@@ -48,12 +51,25 @@ class GCSReferenceConfig(BaseModel):
     credentials: Optional[Path] = None
 
 
+class S3ReferenceConfig(BaseModel):
+    """Configuration for an reference stored in S3"""
+
+    bucket_name: str
+    object_name: str
+    credentials: Optional[Path] = None
+
+
 class ManifestReference(BaseModel):
     """Reference information for a manifest to be loaded into dbt-loom."""
 
     name: str
     type: ManifestReferenceType
-    config: Union[FileReferenceConfig, DbtCloudReferenceConfig, GCSReferenceConfig]
+    config: Union[
+        FileReferenceConfig,
+        DbtCloudReferenceConfig,
+        GCSReferenceConfig,
+        S3ReferenceConfig,
+    ]
 
 
 class dbtLoomConfig(BaseModel):
@@ -72,6 +88,7 @@ class ManifestLoader:
             ManifestReferenceType.file: self.load_from_local_filesystem,
             ManifestReferenceType.dbt_cloud: self.load_from_dbt_cloud,
             ManifestReferenceType.gcs: self.load_from_gcs,
+            ManifestReferenceType.s3: self.load_from_s3,
         }
 
     @staticmethod
@@ -99,6 +116,16 @@ class ManifestLoader:
             bucket_name=config.bucket_name,
             object_name=config.object_name,
             credentials=config.credentials,
+        )
+
+        return gcs_client.load_manifest()
+
+    @staticmethod
+    def load_from_s3(config: S3ReferenceConfig) -> Dict:
+        """Load a manifest dictionary from an S3-compatible bucket."""
+        gcs_client = S3Client(
+            bucket_name=config.bucket_name,
+            object_name=config.object_name,
         )
 
         return gcs_client.load_manifest()
@@ -156,7 +183,7 @@ def convert_model_nodes_to_model_node_args(
             identifier=node.get("relation_name")
             .split(".")[-1]
             .replace('"', "")
-            .replace('`', ""),
+            .replace("`", ""),
             schema=node.get("schema"),
             database=node.get("database"),
             relation_name=node.get("relation_name"),
@@ -206,11 +233,11 @@ class dbtLoom(dbtPlugin):
     @staticmethod
     def replace_env_variables(config_str: str) -> str:
         """Replace environment variable placeholders in the configuration string."""
-        pattern = r'\$(\w+)|\$\{([^}]+)\}'
+        pattern = r"\$(\w+)|\$\{([^}]+)\}"
         return re.sub(
             pattern,
             lambda match: os.environ.get(
-                match.group(1) if match.group(1) is not None else match.group(2), ''
+                match.group(1) if match.group(1) is not None else match.group(2), ""
             ),
             config_str,
         )
@@ -218,14 +245,14 @@ class dbtLoom(dbtPlugin):
     def initialize(self) -> None:
         """Initialize the plugin"""
 
-        print("Initializing dbt-loom")
-
         if self.models != {} or not self.config:
             return
 
-        print(self.config.manifests)
-
         for manifest_reference in self.config.manifests:
+            print(
+                f"dbt-loom: Loading manifest for `{manifest_reference.name}` from "
+                f"`{manifest_reference.type.value}`"
+            )
             manifest = self._manifest_loader.load(manifest_reference)
             if manifest is None:
                 continue
@@ -233,15 +260,12 @@ class dbtLoom(dbtPlugin):
             selected_nodes = identify_public_node_subgraph(manifest)
             self.models.update(convert_model_nodes_to_model_node_args(selected_nodes))
 
-        for key, value in self.models.items():
-            print(key, value)
-
     @dbt_hook
     def get_nodes(self) -> PluginNodes:
         """
         Inject PluginNodes to dbt for injection into dbt's DAG.
         """
-        print("injecting nodes")
+        print("dbt-loom: Injecting nodes")
         return PluginNodes(models=self.models)
 
 
