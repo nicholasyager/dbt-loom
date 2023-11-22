@@ -1,7 +1,6 @@
 version: 2
 
 models:
-
   - name: orders
     description: Order overview data mart, offering key details for each order inlcluding if it's a customer's first order and a food vs. drink item breakdown. One row per order.
     access: public
@@ -46,3 +45,13 @@ models:
         description: A boolean indicating if this order included any food items.
       - name: is_drink_order
         description: A boolean indicating if this order included any drink items.
+
+    latest_version: 2
+    versions:
+      - v: 1
+        deprecation_date: "2024-01-01"
+
+      - v: 2
+        columns:
+          - include: all
+            exclude: [location_id]
