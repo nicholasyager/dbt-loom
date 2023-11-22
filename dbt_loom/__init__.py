@@ -1,16 +1,17 @@
+import datetime
 import json
 import os
 import re
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
 from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
 from networkx import DiGraph
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from dbt_loom.clients.s3 import S3Client
 
@@ -82,6 +83,30 @@ class LoomConfigurationError(BaseException):
     """Error raised when dbt-loom has been misconfigured."""
 
 
+class ManifestNode(BaseModel):
+    """A basic ManifestNode that can be referenced across projects."""
+
+    name: str
+    package_name: str
+    schema_name: str = Field(alias="schema")
+    database: Optional[str] = None
+    relation_name: Optional[str] = None
+    version: Optional[Union[str, float]] = None
+    latest_version: Optional[Union[str, float]] = None
+    deprecation_date: Optional[datetime.datetime] = None
+    access: Optional[str] = "protected"
+    generated_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+    depends_on_nodes: List[str] = Field(default_factory=list)
+    enabled: bool = True
+
+    @property
+    def identifier(self) -> str:
+        if not self.relation_name:
+            return self.name
+
+        return self.relation_name.split(".")[-1].replace('"', "").replace("`", "")
+
+
 class ManifestLoader:
     def __init__(self):
         self.loading_functions = {
@@ -139,12 +164,14 @@ class ManifestLoader:
                 "not have a valid type."
             )
 
-        return self.loading_functions[manifest_reference.type](
+        manifest = self.loading_functions[manifest_reference.type](
             manifest_reference.config
         )
 
+        return manifest
 
-def identify_public_node_subgraph(manifest) -> Dict[str, Any]:
+
+def identify_public_node_subgraph(manifest) -> Dict[str, ManifestNode]:
     """
     Identify all nodes that are ancestors of public nodes, and the public nodes
     themselves.
@@ -167,33 +194,20 @@ def identify_public_node_subgraph(manifest) -> Dict[str, Any]:
     selected_node_ids.update(public_nodes)
 
     return {
-        unique_id: manifest.get("nodes", {}).get(unique_id)
+        unique_id: ManifestNode(**(manifest.get("nodes", {}).get(unique_id)))
         for unique_id in selected_node_ids
     }
 
 
 def convert_model_nodes_to_model_node_args(
-    selected_nodes: Dict[str, Any]
+    selected_nodes: Dict[str, ManifestNode]
 ) -> Dict[str, ModelNodeArgs]:
     """Generate a dictionary of ModelNodeArgs based on a dictionary of ModelNodes"""
     return {
         unique_id: ModelNodeArgs(
-            name=node.get("name"),
-            package_name=node.get("package_name"),
-            identifier=node.get("relation_name")
-            .split(".")[-1]
-            .replace('"', "")
-            .replace("`", ""),
-            schema=node.get("schema"),
-            database=node.get("database"),
-            relation_name=node.get("relation_name"),
-            version=node.get("version"),
-            latest_version=node.get("latest_version"),
-            deprecation_date=node.get("deprecation_date"),
-            access=node.get("access", "public"),
-            generated_at=node.get("created_at"),
-            depends_on_nodes=list(),
-            enabled=node["config"].get("enabled"),
+            schema=node.schema_name,
+            identifier=node.identifier,
+            **(node.dict(exclude={"schema_name"})),
         )
         for unique_id, node in selected_nodes.items()
         if node is not None
@@ -253,6 +267,7 @@ class dbtLoom(dbtPlugin):
                 f"dbt-loom: Loading manifest for `{manifest_reference.name}` from "
                 f"`{manifest_reference.type.value}`"
             )
+
             manifest = self._manifest_loader.load(manifest_reference)
             if manifest is None:
                 continue
