@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import re
@@ -139,9 +140,23 @@ class ManifestLoader:
                 "not have a valid type."
             )
 
-        return self.loading_functions[manifest_reference.type](
+        manifest = self.loading_functions[manifest_reference.type](
             manifest_reference.config
         )
+
+        for _, node in manifest.get("nodes", {}).items():
+            if node.get("deprecation_date"):
+                node["deprecation_date"] = datetime.datetime.fromisoformat(
+                    node["deprecation_date"]
+                )
+
+            for version in node.get("versions", []):
+                if version.get("deprecation_date"):
+                    version["deprecation_date"] = datetime.datetime.fromisoformat(
+                        version["deprecation_date"]
+                    )
+
+        return manifest
 
 
 def identify_public_node_subgraph(manifest) -> Dict[str, Any]:
@@ -253,6 +268,7 @@ class dbtLoom(dbtPlugin):
                 f"dbt-loom: Loading manifest for `{manifest_reference.name}` from "
                 f"`{manifest_reference.type.value}`"
             )
+
             manifest = self._manifest_loader.load(manifest_reference)
             if manifest is None:
                 continue
