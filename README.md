@@ -37,6 +37,7 @@ dbt-loom currently supports obtaining model definitions from:
 - dbt Cloud
 - GCS
 - S3-compatible object storage services
+- Azure Storage
 
 :warning: **dbt Core's plugin functionality is still in beta. Please note that this may break in the future as dbt Labs solidifies the dbt plugin API in future versions.**
 
@@ -123,6 +124,25 @@ manifests:
 
       credentials: <PATH TO YOUR SERVICE ACCOUNT JSON CREDENTIALS>
       # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
+```
+
+### Using Azure Storage as an artifact source
+
+You can use dbt-loom to fetch manifest files from Azure Storage
+by setting up an `azure` manifest in your `dbt-loom` config. The `azure` type implements
+the [DefaultAzureCredential](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python)
+class, supporting all environment variables and authentication mechanisms.
+Alternatively, set the `AZURE_STORAGE_CONNECTION_STRING` environment variable to
+authenticate via a connection string.
+
+```yaml
+manifests:
+  - name: project_name
+    type: azure
+    config:
+      account_name: <YOUR AZURE STORAGE ACCOUNT NAME> # The name of your Azure Storage account
+      container_name: <YOUR AZURE STORAGE CONTAINER NAME> # The name of your Azure Storage container
+      object_name: <YOUR OBJECT NAME> # The object name of your manifest file.
 ```
 
 ### Using environment variables
