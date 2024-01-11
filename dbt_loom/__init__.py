@@ -13,6 +13,7 @@ from dbt.plugins.manifest import PluginNodes
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
+from dbt_loom.clients.az_blob import AzureClient
 from dbt_loom.clients.s3 import S3Client
 
 from .clients.dbt_cloud import DbtCloud
@@ -26,6 +27,7 @@ class ManifestReferenceType(str, Enum):
     dbt_cloud = "dbt_cloud"
     gcs = "gcs"
     s3 = "s3"
+    azure = "azure"
 
 
 class FileReferenceConfig(BaseModel):
@@ -60,6 +62,14 @@ class S3ReferenceConfig(BaseModel):
     credentials: Optional[Path] = None
 
 
+class AzureReferenceConfig(BaseModel):
+    """Configuration for an reference stored in Azure Storage"""
+
+    container_name: str
+    object_name: str
+    account_name: str
+
+
 class ManifestReference(BaseModel):
     """Reference information for a manifest to be loaded into dbt-loom."""
 
@@ -70,6 +80,7 @@ class ManifestReference(BaseModel):
         DbtCloudReferenceConfig,
         GCSReferenceConfig,
         S3ReferenceConfig,
+        AzureReferenceConfig,
     ]
 
 
@@ -114,6 +125,7 @@ class ManifestLoader:
             ManifestReferenceType.dbt_cloud: self.load_from_dbt_cloud,
             ManifestReferenceType.gcs: self.load_from_gcs,
             ManifestReferenceType.s3: self.load_from_s3,
+            ManifestReferenceType.azure: self.load_from_azure,
         }
 
     @staticmethod
@@ -154,6 +166,17 @@ class ManifestLoader:
         )
 
         return gcs_client.load_manifest()
+
+    @staticmethod
+    def load_from_azure(config: AzureReferenceConfig) -> Dict:
+        """Load a manifest dictionary from Azure storage."""
+        azure_client = AzureClient(
+            container_name=config.container_name,
+            object_name=config.object_name,
+            account_name=config.account_name,
+        )
+
+        return azure_client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""

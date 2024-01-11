@@ -11,22 +11,31 @@ version = "0.3.1"
 version_files = ["pyproject.toml:^version"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
-dbt-core = "1.6.0"
+python = ">=3.9,<4.0"
+dbt-core = ">=1.6.0,<1.8.0"
 requests = "^2.31.0"
-google-cloud-storage = "2.13.0"
+google-cloud-storage = "^2.13.0"
 boto3 = "^1.28.84"
+azure-storage-blob = "^12.19.0"
+azure-identity = "^1.15.0"
+types-pyyaml = "^6.0.12.12"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.278"
 pytest = "^7.4.0"
 isort = "^5.12.0"
 black = "^23.7.0"
-dbt-duckdb = "1.6.0"
+dbt-duckdb = "^1.6.0"
 duckdb = ">=0.8.0"
+pre-commit = "^3.6.0"
+mypy = "^1.8.0"
 
 [tool.ruff]
 line-length = 88
+
+[tool.isort]
+force_grid_wrap = 0 # Resolve conflict with Black
+line_length = 88    # Comply with Ruff and Black
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
