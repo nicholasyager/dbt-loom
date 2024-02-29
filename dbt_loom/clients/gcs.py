@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Dict, Optional
 
 from google.cloud import storage
-
+from google.auth import exceptions
+from google.oauth2 import service_account
 
 class GCSClient:
     """Client for GCS. Fetches manifest for a given bucket."""
@@ -20,15 +21,27 @@ class GCSClient:
         self.object_name = object_name
         self.credentials = credentials
 
+    def _get_client(self):
+        """Get a storage client using the provided credentials or default credentials."""
+        if self.credentials:
+            try:
+                credentials = service_account.Credentials.from_service_account_file(
+                    self.credentials
+                )
+                client = storage.Client(credentials=credentials, project=self.project_id)
+            except exceptions.GoogleAuthError as e:
+                raise Exception(f"Failed to load specified credentials: {e}")
+        else:
+            # Will attempt to use default credentials
+            try:
+                client = storage.Client(project=self.project_id)
+            except exceptions.DefaultCredentialsError as e:
+                raise Exception(f"Could not automatically determine credentials: {e}")
+        return client
+
     def load_manifest(self) -> Dict:
         """Load a manifest json from a GCS bucket."""
-        client = (
-            storage.Client.from_service_account_json(
-                self.credentials, project=self.project_id
-            )
-            if self.credentials
-            else storage.Client(project=self.project_id)
-        )
+        client = self._get_client()
         bucket = client.get_bucket(self.bucket_name)
         blob = bucket.get_blob(self.object_name)
         if not blob:
