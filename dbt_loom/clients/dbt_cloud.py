@@ -2,6 +2,8 @@ import os
 from typing import Any, Dict, Optional
 
 import requests
+from dbt.events.functions import fire_event
+from dbt.events.types import Note
 
 
 class DbtCloud:
@@ -29,7 +31,7 @@ class DbtCloud:
     def _query(self, endpoint: str, **kwargs) -> Dict:
         """Query the dbt Cloud Administrative API."""
         url = f"{self.api_endpoint}/{endpoint}"
-        print(f"Querying {url}")
+        fire_event(Note(msg=f"Querying {url}"))
         response = requests.get(
             url,
             headers={

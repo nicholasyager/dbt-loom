@@ -10,6 +10,8 @@ import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
 from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
+from dbt.events.functions import fire_event
+from dbt.events.types import Note
 from networkx import DiGraph
 from pydantic import BaseModel, Field
 
@@ -286,10 +288,10 @@ class dbtLoom(dbtPlugin):
             return
 
         for manifest_reference in self.config.manifests:
-            print(
-                f"dbt-loom: Loading manifest for `{manifest_reference.name}` from "
-                f"`{manifest_reference.type.value}`"
-            )
+            fire_event(Note(
+                        msg=f"dbt-loom: Loading manifest for `{manifest_reference.name}`"
+                            f" from `{manifest_reference.type.value}`"
+                       ))
 
             manifest = self._manifest_loader.load(manifest_reference)
             if manifest is None:
@@ -303,7 +305,7 @@ class dbtLoom(dbtPlugin):
         """
         Inject PluginNodes to dbt for injection into dbt's DAG.
         """
-        print("dbt-loom: Injecting nodes")
+        fire_event(Note(msg="dbt-loom: Injecting nodes"))
         return PluginNodes(models=self.models)
 
 
