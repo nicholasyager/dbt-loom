@@ -3,6 +3,16 @@ from pathlib import Path
 from typing import Dict, Optional
 
 from google.cloud import storage
+from pydantic import BaseModel
+
+
+class GCSReferenceConfig(BaseModel):
+    """Configuration for a GCS reference"""
+
+    project_id: str
+    bucket_name: str
+    object_name: str
+    credentials: Optional[Path] = None
 
 
 class GCSClient:
@@ -33,7 +43,8 @@ class GCSClient:
         blob = bucket.get_blob(self.object_name)
         if not blob:
             raise Exception(
-                f"The object `{self.object_name}` does not exist in bucket `{self.bucket_name}`."
+                f"The object `{self.object_name}` does not exist in bucket "
+                f"`{self.bucket_name}`."
             )
 
         manifest_json = blob.download_as_text()

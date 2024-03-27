@@ -1,9 +1,19 @@
 import os
 from typing import Any, Dict, Optional
 
+from pydantic import BaseModel
 import requests
 from dbt.events.functions import fire_event
 from dbt.events.types import Note
+
+
+class DbtCloudReferenceConfig(BaseModel):
+    """Configuration for a dbt Cloud reference."""
+
+    account_id: int
+    job_id: int
+    api_endpoint: Optional[str] = None
+    step: Optional[int] = None
 
 
 class DbtCloud:

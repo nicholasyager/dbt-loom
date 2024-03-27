@@ -1,7 +1,17 @@
 import json
-from typing import Dict
+from pathlib import Path
+from typing import Dict, Optional
 
 import boto3
+from pydantic import BaseModel
+
+
+class S3ReferenceConfig(BaseModel):
+    """Configuration for an reference stored in S3"""
+
+    bucket_name: str
+    object_name: str
+    credentials: Optional[Path] = None
 
 
 class S3Client:
