@@ -4,6 +4,15 @@ from typing import Dict
 
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
+from pydantic import BaseModel
+
+
+class AzureReferenceConfig(BaseModel):
+    """Configuration for an reference stored in Azure Storage"""
+
+    container_name: str
+    object_name: str
+    account_name: str
 
 
 class AzureClient:
