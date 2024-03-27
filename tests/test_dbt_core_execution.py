@@ -1,6 +1,7 @@
 import os
 
 from dbt.cli.main import dbtRunner, dbtRunnerResult
+from importlib.metadata import version
 
 
 def test_dbt_core_runs_loom_plugin():
@@ -24,9 +25,13 @@ def test_dbt_core_runs_loom_plugin():
 
     # Check for injection
     assert isinstance(output.result, list)
+
+    # Check that the versioned models work.
+    subset = {
+        "revenue.orders.v1",
+        "revenue.orders.v2",
+    }
+
     assert set(output.result).issuperset(
-        {
-            "revenue.orders.v1.0",
-            "revenue.orders.v2.0",
-        }
+        subset
     ), "The child project is missing expected nodes. Check that injection still works."
