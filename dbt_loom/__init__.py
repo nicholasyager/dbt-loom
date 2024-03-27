@@ -51,7 +51,12 @@ def convert_model_nodes_to_model_node_args(
         unique_id: ModelNodeArgs(
             schema=node.schema_name,
             identifier=node.identifier,
-            **(node.model_dump(exclude={"schema_name"})),
+            **(
+                # Small bit of logic to support both pydantic 2 and pydantic 1
+                node.model_dump(exclude={"schema_name"})
+                if hasattr(node, "model_dump")
+                else node.dict(exclude={"schema_name"})
+            ),
         )
         for unique_id, node in selected_nodes.items()
         if node is not None
