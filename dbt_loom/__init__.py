@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Callable, Dict, Mapping, Optional
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -33,8 +33,9 @@ def identify_public_node_subgraph(manifest) -> Dict[str, ManifestNode]:
             ]
         )
 
-        if node.get("access", "protected") == "public":
-            public_nodes.add(unique_id)
+        # if node.get("access", "protected") == "public":
+        public_nodes.add(unique_id)
+
     selected_node_ids.update(public_nodes)
 
     return {
@@ -63,6 +64,12 @@ def convert_model_nodes_to_model_node_args(
     }
 
 
+class LoomRunnableConfig:
+    """A shim class to allow is_invalid_*_ref functions to correctly handle access for loom-injected models."""
+
+    restrict_access: bool = True
+
+
 class dbtLoom(dbtPlugin):
     """
     dbtLoom is a dbt plugin that loads manifest files, parses a DAG from the manifest,
@@ -79,7 +86,34 @@ class dbtLoom(dbtPlugin):
         self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
         self.models: Dict[str, ModelNodeArgs] = {}
 
+        import dbt.contracts.graph.manifest
+
+        dbt.contracts.graph.manifest.Manifest.is_invalid_protected_ref = (  # type: ignore
+            self.dependency_wrapper(
+                dbt.contracts.graph.manifest.Manifest.is_invalid_protected_ref
+            )
+        )
+        dbt.contracts.graph.manifest.Manifest.is_invalid_private_ref = (  # type: ignore
+            self.dependency_wrapper(
+                dbt.contracts.graph.manifest.Manifest.is_invalid_private_ref
+            )
+        )
+
         super().__init__(project_name)
+
+    def dependency_wrapper(self, function) -> Callable:
+        fire_event(
+            Note(msg=f"dbt-loom: Patching {function} to support dbt-loom dependencies.")
+        )
+
+        def outer_function(inner_self, node, target_model, dependencies) -> bool:
+            if self.config is not None:
+                for manifest in self.config.manifests:
+                    dependencies[manifest.name] = LoomRunnableConfig()
+
+            return function(inner_self, node, target_model, dependencies)
+
+        return outer_function
 
     def read_config(self, path: Path) -> Optional[dbtLoomConfig]:
         """Read the dbt-loom configuration file."""
