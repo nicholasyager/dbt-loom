@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Callable, Dict, Mapping, Optional
+from typing import Any, Callable, Dict, Mapping, Optional
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -9,6 +9,8 @@ from dbt.events.functions import fire_event
 from dbt.events.types import Note
 from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
+from dbt.config.project import VarProvider
+
 from networkx import DiGraph
 
 from dbt_loom.config import dbtLoomConfig
@@ -68,6 +70,7 @@ class LoomRunnableConfig:
     """A shim class to allow is_invalid_*_ref functions to correctly handle access for loom-injected models."""
 
     restrict_access: bool = True
+    vars: VarProvider = VarProvider(vars={})
 
 
 class dbtLoom(dbtPlugin):
