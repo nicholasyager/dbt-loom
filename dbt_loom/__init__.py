@@ -17,32 +17,16 @@ from dbt_loom.config import dbtLoomConfig
 from dbt_loom.manifests import ManifestLoader, ManifestNode
 
 
-def identify_public_node_subgraph(manifest) -> Dict[str, ManifestNode]:
+def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
     """
-    Identify all nodes that are ancestors of public nodes, and the public nodes
-    themselves.
+    Identify all nodes that should be selected from the manifest, and return ManifestNodes.
     """
-    graph: DiGraph = DiGraph()
-    public_nodes = set()
-    selected_node_ids = set()
 
-    for unique_id, node in manifest["nodes"].items():
-        graph.add_edges_from(
-            [
-                (parent, unique_id)
-                for parent in node.get("depends_on", {"nodes": []}).get("nodes", [])
-                if parent.startswith("model")
-            ]
-        )
-
-        # if node.get("access", "protected") == "public":
-        public_nodes.add(unique_id)
-
-    selected_node_ids.update(public_nodes)
+    # We're going to temporarily allow all nodes here.
 
     return {
         unique_id: ManifestNode(**(manifest.get("nodes", {}).get(unique_id)))
-        for unique_id in selected_node_ids
+        for unique_id in manifest["nodes"].keys()
     }
 
 
@@ -56,9 +40,9 @@ def convert_model_nodes_to_model_node_args(
             identifier=node.identifier,
             **(
                 # Small bit of logic to support both pydantic 2 and pydantic 1
-                node.model_dump(exclude={"schema_name"})
+                node.model_dump(exclude={"schema_name", "depends_on"})
                 if hasattr(node, "model_dump")
-                else node.dict(exclude={"schema_name"})
+                else node.dict(exclude={"schema_name", "depends_on"})
             ),
         )
         for unique_id, node in selected_nodes.items()
@@ -91,6 +75,11 @@ class dbtLoom(dbtPlugin):
 
         import dbt.contracts.graph.manifest
 
+        fire_event(
+            Note(
+                msg="dbt-loom: Patching ref protection methods to support dbt-loom dependencies."
+            )
+        )
         dbt.contracts.graph.manifest.Manifest.is_invalid_protected_ref = (  # type: ignore
             self.dependency_wrapper(
                 dbt.contracts.graph.manifest.Manifest.is_invalid_protected_ref
@@ -105,10 +94,6 @@ class dbtLoom(dbtPlugin):
         super().__init__(project_name)
 
     def dependency_wrapper(self, function) -> Callable:
-        fire_event(
-            Note(msg=f"dbt-loom: Patching {function} to support dbt-loom dependencies.")
-        )
-
         def outer_function(inner_self, node, target_model, dependencies) -> bool:
             if self.config is not None:
                 for manifest in self.config.manifests:
@@ -160,7 +145,7 @@ class dbtLoom(dbtPlugin):
             if manifest is None:
                 continue
 
-            selected_nodes = identify_public_node_subgraph(manifest)
+            selected_nodes = identify_node_subgraph(manifest)
             self.models.update(convert_model_nodes_to_model_node_args(selected_nodes))
 
     @dbt_hook

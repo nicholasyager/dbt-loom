@@ -2,7 +2,7 @@ import datetime
 import json
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from dbt_loom.clients.az_blob import AzureClient, AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig
@@ -14,6 +14,13 @@ from dbt_loom.config import (
     ManifestReference,
     ManifestReferenceType,
 )
+
+
+class DependsOn(BaseModel):
+    """Wrapper for storing dependencies"""
+
+    nodes: List[str] = Field(default_factory=list)
+    macros: List[str] = Field(default_factory=list)
 
 
 class ManifestNode(BaseModel):
@@ -29,8 +36,19 @@ class ManifestNode(BaseModel):
     deprecation_date: Optional[datetime.datetime] = None
     access: Optional[str] = "protected"
     generated_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+    depends_on: Optional[DependsOn] = None
     depends_on_nodes: List[str] = Field(default_factory=list)
     enabled: bool = True
+
+    @validator("depends_on_nodes", always=True)
+    def default_depends_on_nodes(cls, v, values):
+        depends_on = values.get("depends_on")
+        if depends_on is None:
+            return []
+
+        return [
+            node for node in depends_on.nodes if node.split(".")[0] not in ("source")
+        ]
 
     @property
     def identifier(self) -> str:
