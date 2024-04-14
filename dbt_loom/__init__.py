@@ -27,6 +27,7 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
     return {
         unique_id: ManifestNode(**(manifest.get("nodes", {}).get(unique_id)))
         for unique_id in manifest["nodes"].keys()
+        if unique_id.split(".")[0] in ("model")
     }
 
 
