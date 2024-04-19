@@ -1,7 +1,10 @@
 import os
+from pathlib import Path
 
+import dbt
 from dbt.cli.main import dbtRunner, dbtRunnerResult
-from importlib.metadata import version
+
+import dbt.exceptions
 
 
 def test_dbt_core_runs_loom_plugin():
@@ -20,6 +23,8 @@ def test_dbt_core_runs_loom_plugin():
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["ls"])
 
+    os.chdir(starting_path)
+
     # Make sure nothing failed
     assert output.exception is None
 
@@ -35,3 +40,42 @@ def test_dbt_core_runs_loom_plugin():
     assert set(output.result).issuperset(
         subset
     ), "The child project is missing expected nodes. Check that injection still works."
+
+
+def test_dbt_loom_injects_dependencies():
+    """Verify that dbt-core runs the dbt-loom plugin and that it flags access violations."""
+
+    starting_path = os.getcwd()
+    path = Path(
+        f"{starting_path}/test_projects/customer_success/models/staging/stg_orders_enhanced.sql"
+    )
+    print(path)
+    with open(path, "w") as file:
+        file.write(
+            """
+            with
+            upstream as (
+                select * from {{ ref('stg_orders') }}
+            )
+
+            select * from upstream
+            """
+        )
+
+    runner = dbtRunner()
+
+    # Compile the revenue project
+    os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["deps"])
+    runner.invoke(["compile"])
+
+    # Run `ls`` in the customer_success project
+    os.chdir(f"{starting_path}/test_projects/customer_success")
+    runner.invoke(["deps"])
+    output: dbtRunnerResult = runner.invoke(["ls"])
+
+    path.unlink()
+    os.chdir(starting_path)
+
+    # Make sure nothing failed
+    assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
