@@ -1,3 +1,6 @@
 seeds:
   - name: integers
     access: public
+    config:
+      # Manually add to config to support dbt-core 1.6.x
+      access: public
