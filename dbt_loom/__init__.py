@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Any, Callable, Dict, Mapping, Optional
+from typing import Callable, Dict, Optional
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -11,7 +11,6 @@ from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
 from dbt.config.project import VarProvider
 
-from networkx import DiGraph
 
 from dbt_loom.config import dbtLoomConfig
 from dbt_loom.manifests import ManifestLoader, ManifestNode
@@ -22,13 +21,24 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
     Identify all nodes that should be selected from the manifest, and return ManifestNodes.
     """
 
-    # We're going to temporarily allow all nodes here.
+    output = {}
 
-    return {
-        unique_id: ManifestNode(**(manifest.get("nodes", {}).get(unique_id)))
-        for unique_id in manifest["nodes"].keys()
-        if unique_id.split(".")[0] in ("model")
-    }
+    # We're going to temporarily allow all nodes here.
+    for unique_id in manifest["nodes"].keys():
+        if unique_id.split(".")[0] in ("tests", "macros"):
+            continue
+
+        node = manifest.get("nodes", {}).get(unique_id)
+
+        if not node:
+            continue
+
+        if node.get("access") is None:
+            node["access"] = node.get("config", {}).get("access", "protected")
+
+        output[unique_id] = ManifestNode(**(node))
+
+    return output
 
 
 def convert_model_nodes_to_model_node_args(
@@ -41,9 +51,9 @@ def convert_model_nodes_to_model_node_args(
             identifier=node.identifier,
             **(
                 # Small bit of logic to support both pydantic 2 and pydantic 1
-                node.model_dump(exclude={"schema_name", "depends_on"})
+                node.model_dump(exclude={"schema_name", "depends_on", "node_config"})
                 if hasattr(node, "model_dump")
-                else node.dict(exclude={"schema_name", "depends_on"})
+                else node.dict(exclude={"schema_name", "depends_on", "node_config"})
             ),
         )
         for unique_id, node in selected_nodes.items()

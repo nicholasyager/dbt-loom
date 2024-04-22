@@ -18,6 +18,10 @@ orders_mart as (
 
 ),
 
+integers as (
+    select * from  {{ ref('revenue', 'integers') }}
+)
+
 order_summary as (
 
     select
