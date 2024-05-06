@@ -51,7 +51,7 @@ models:
       - v: 1
         deprecation_date: "2024-01-01"
 
-      - v: 2
+      - v: 2.0
         columns:
           - include: all
             exclude: [location_id]
