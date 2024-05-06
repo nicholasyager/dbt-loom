@@ -36,6 +36,11 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
         if node.get("access") is None:
             node["access"] = node.get("config", {}).get("access", "protected")
 
+        # Versions may be floats or strings. Standardize on strings for compatibility.
+        for key in ("version", "latest_version"):
+            if node.get(key):
+                node[key] = str(node[key])
+
         output[unique_id] = ManifestNode(**(node))
 
     return output

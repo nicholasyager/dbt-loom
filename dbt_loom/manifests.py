@@ -31,8 +31,8 @@ class ManifestNode(BaseModel):
     schema_name: str = Field(alias="schema")
     database: Optional[str] = None
     relation_name: Optional[str] = None
-    version: Optional[Union[str, float]] = None
-    latest_version: Optional[Union[str, float]] = None
+    version: Optional[str] = None
+    latest_version: Optional[str] = None
     deprecation_date: Optional[datetime.datetime] = None
     access: Optional[str] = "protected"
     generated_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
