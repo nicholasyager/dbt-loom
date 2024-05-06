@@ -10,7 +10,7 @@ from dbt.events.types import Note
 from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
 from dbt.config.project import VarProvider
-
+from dbt.node_types import NodeType
 
 from dbt_loom.config import dbtLoomConfig
 from dbt_loom.manifests import ManifestLoader, ManifestNode
@@ -25,7 +25,7 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
 
     # We're going to temporarily allow all nodes here.
     for unique_id in manifest["nodes"].keys():
-        if unique_id.split(".")[0] in ("tests", "macros"):
+        if unique_id.split(".")[0] in (NodeType.Test.value, NodeType.Macro.value):
             continue
 
         node = manifest.get("nodes", {}).get(unique_id)
