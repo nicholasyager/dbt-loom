@@ -54,6 +54,10 @@ supplies as (
 
 ),
 
+accounts as (
+    select * from {{ ref('stg_accounts') }}
+),
+
 order_items_summary as (
 
     select
