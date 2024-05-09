@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 import re
 from pathlib import Path
@@ -16,6 +17,31 @@ from dbt_loom.config import dbtLoomConfig
 from dbt_loom.manifests import ManifestLoader, ManifestNode
 
 import importlib.metadata
+
+
+@dataclass
+class LoomModelNodeArgs(ModelNodeArgs):
+    """A dbt-loom extension of ModelNodeArgs to preserve resource types across lineages."""
+
+    resource_type: NodeType = NodeType.Model
+
+    def __init__(self, **kwargs):
+        super().__init__(
+            **{
+                key: value
+                for key, value in kwargs.items()
+                if key not in ("resource_type")
+            }
+        )
+        self.resource_type = kwargs["resource_type"]
+
+    @property
+    def unique_id(self) -> str:
+        unique_id = f"{self.resource_type}.{self.package_name}.{self.name}"
+        if self.version:
+            unique_id = f"{unique_id}.v{self.version}"
+
+        return unique_id
 
 
 def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
@@ -50,10 +76,10 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
 
 def convert_model_nodes_to_model_node_args(
     selected_nodes: Dict[str, ManifestNode],
-) -> Dict[str, ModelNodeArgs]:
+) -> Dict[str, LoomModelNodeArgs]:
     """Generate a dictionary of ModelNodeArgs based on a dictionary of ModelNodes"""
     return {
-        unique_id: ModelNodeArgs(
+        unique_id: LoomModelNodeArgs(
             schema=node.schema_name,
             identifier=node.identifier,
             **(
@@ -94,7 +120,7 @@ class dbtLoom(dbtPlugin):
         self._manifest_loader = ManifestLoader()
 
         self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
-        self.models: Dict[str, ModelNodeArgs] = {}
+        self.models: Dict[str, LoomModelNodeArgs] = {}
 
         import dbt.contracts.graph.manifest
 
@@ -177,7 +203,7 @@ class dbtLoom(dbtPlugin):
         Inject PluginNodes to dbt for injection into dbt's DAG.
         """
         fire_event(Note(msg="dbt-loom: Injecting nodes"))
-        return PluginNodes(models=self.models)
+        return PluginNodes(models=self.models)  # type: ignore
 
 
 plugins = [dbtLoom]

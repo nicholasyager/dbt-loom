@@ -4,6 +4,8 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from dbt.node_types import NodeType
+
 from dbt_loom.clients.az_blob import AzureClient, AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig
 from dbt_loom.clients.gcs import GCSClient, GCSReferenceConfig
@@ -27,6 +29,7 @@ class ManifestNode(BaseModel):
     """A basic ManifestNode that can be referenced across projects."""
 
     name: str
+    resource_type: NodeType
     package_name: str
     schema_name: str = Field(alias="schema")
     database: Optional[str] = None

@@ -1,7 +1,6 @@
 version: 2
 
 models:
-
   - name: stg_locations
     description: List of open locations with basic cleaning and transformation applied, one row per location.
     columns:
@@ -46,6 +45,16 @@ models:
     columns:
       - name: supply_uuid
         description: The unique key of our supplies per cost.
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_accounts
+    description: >
+      List of all accounts.
+    columns:
+      - name: name
+        description: The unique key of our accounts.
         tests:
           - not_null
           - unique
