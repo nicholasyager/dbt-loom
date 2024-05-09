@@ -15,6 +15,8 @@ from dbt.node_types import NodeType
 from dbt_loom.config import dbtLoomConfig
 from dbt_loom.manifests import ManifestLoader, ManifestNode
 
+import importlib.metadata
+
 
 def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
     """
@@ -80,6 +82,11 @@ class dbtLoom(dbtPlugin):
     """
 
     def __init__(self, project_name: str):
+        # Log the version of dbt-loom being intialized
+        fire_event(
+            Note(msg=f'Initializing dbt-loom={importlib.metadata.version("dbt-loom")}')
+        )
+
         configuration_path = Path(
             os.environ.get("DBT_LOOM_CONFIG", "dbt_loom.config.yml")
         )
