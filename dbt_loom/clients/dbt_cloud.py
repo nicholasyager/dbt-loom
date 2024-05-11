@@ -3,8 +3,8 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 import requests
-from dbt.events.functions import fire_event
-from dbt.events.types import Note
+
+from dbt_loom.logging import fire_event
 
 
 class DbtCloudReferenceConfig(BaseModel):
@@ -41,7 +41,7 @@ class DbtCloud:
     def _query(self, endpoint: str, **kwargs) -> Dict:
         """Query the dbt Cloud Administrative API."""
         url = f"{self.api_endpoint}/{endpoint}"
-        fire_event(Note(msg=f"Querying {url}"))
+        fire_event(msg=f"Querying {url}")
         response = requests.get(
             url,
             headers={
