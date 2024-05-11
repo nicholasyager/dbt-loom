@@ -1,10 +1,13 @@
 import datetime
 import json
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
 
-from dbt.node_types import NodeType
+try:
+    from dbt.artifacts.resources.types import NodeType
+except ModuleNotFoundError:
+    from dbt.node_types import NodeType  # type: ignore
 
 from dbt_loom.clients.az_blob import AzureClient, AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig

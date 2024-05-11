@@ -6,14 +6,20 @@ from typing import Callable, Dict, Optional
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
-from dbt.events.functions import fire_event
-from dbt.events.types import Note
+
+
 from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
 from dbt.config.project import VarProvider
-from dbt.node_types import NodeType
+
+try:
+    from dbt.artifacts.resources.types import NodeType
+except ModuleNotFoundError:
+    from dbt.node_types import NodeType  # type: ignore
+
 
 from dbt_loom.config import dbtLoomConfig
+from dbt_loom.logging import fire_event
 from dbt_loom.manifests import ManifestLoader, ManifestNode
 
 import importlib.metadata
@@ -110,7 +116,7 @@ class dbtLoom(dbtPlugin):
     def __init__(self, project_name: str):
         # Log the version of dbt-loom being intialized
         fire_event(
-            Note(msg=f'Initializing dbt-loom={importlib.metadata.version("dbt-loom")}')
+            msg=f'Initializing dbt-loom={importlib.metadata.version("dbt-loom")}'
         )
 
         configuration_path = Path(
@@ -125,9 +131,7 @@ class dbtLoom(dbtPlugin):
         import dbt.contracts.graph.manifest
 
         fire_event(
-            Note(
-                msg="dbt-loom: Patching ref protection methods to support dbt-loom dependencies."
-            )
+            msg="dbt-loom: Patching ref protection methods to support dbt-loom dependencies."
         )
         dbt.contracts.graph.manifest.Manifest.is_invalid_protected_ref = (  # type: ignore
             self.dependency_wrapper(
@@ -184,10 +188,8 @@ class dbtLoom(dbtPlugin):
 
         for manifest_reference in self.config.manifests:
             fire_event(
-                Note(
-                    msg=f"dbt-loom: Loading manifest for `{manifest_reference.name}`"
-                    f" from `{manifest_reference.type.value}`"
-                )
+                msg=f"dbt-loom: Loading manifest for `{manifest_reference.name}`"
+                f" from `{manifest_reference.type.value}`"
             )
 
             manifest = self._manifest_loader.load(manifest_reference)
@@ -202,7 +204,7 @@ class dbtLoom(dbtPlugin):
         """
         Inject PluginNodes to dbt for injection into dbt's DAG.
         """
-        fire_event(Note(msg="dbt-loom: Injecting nodes"))
+        fire_event(msg="dbt-loom: Injecting nodes")
         return PluginNodes(models=self.models)  # type: ignore
 
 
