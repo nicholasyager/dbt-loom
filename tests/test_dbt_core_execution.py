@@ -3,12 +3,12 @@ from pathlib import Path
 
 import dbt
 from dbt.cli.main import dbtRunner, dbtRunnerResult
-from dbt.contracts.results import RunExecutionResult, NodeResult
 
 from dbt.contracts.graph.nodes import ModelNode
 
 
 import dbt.exceptions
+import pytest
 
 starting_path = os.getcwd()
 
@@ -53,8 +53,22 @@ def test_dbt_core_runs_loom_plugin():
     ), "The child project is missing expected nodes. Check that injection still works."
 
 
+@pytest.mark.skip(
+    reason="This only applies when a project has restrict-access: true, which bugs all dbt tests. "
+    "We can bring this back when that is not the case."
+)
 def test_dbt_loom_injects_dependencies():
     """Verify that dbt-core runs the dbt-loom plugin and that it flags access violations."""
+
+    runner = dbtRunner()
+
+    # Compile the revenue project
+    os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
+    runner.invoke(["deps"])
+    output = runner.invoke(["compile"])
+
+    assert output.exception is None, output.exception.get_message()  # type: ignore
 
     path = Path(
         f"{starting_path}/test_projects/customer_success/models/staging/stg_orders_enhanced.sql"
@@ -72,14 +86,6 @@ def test_dbt_loom_injects_dependencies():
             """
         )
 
-    runner = dbtRunner()
-
-    # Compile the revenue project
-    os.chdir(f"{starting_path}/test_projects/revenue")
-    runner.invoke(["clean"])
-    runner.invoke(["deps"])
-    runner.invoke(["compile"])
-
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
     runner.invoke(["clean"])
@@ -94,6 +100,16 @@ def test_dbt_loom_injects_dependencies():
 
 def test_dbt_loom_injects_groups():
     """Verify that dbt-core runs the dbt-loom plugin and that it flags group violations."""
+
+    runner = dbtRunner()
+
+    # Compile the revenue project
+    os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
+    runner.invoke(["deps"])
+    output = runner.invoke(["compile"])
+
+    assert output.exception is None
 
     path = Path(
         f"{starting_path}/test_projects/customer_success/models/marts/marketing_lists.sql"
@@ -110,14 +126,6 @@ def test_dbt_loom_injects_groups():
             select * from upstream
             """
         )
-
-    runner = dbtRunner()
-
-    # Compile the revenue project
-    os.chdir(f"{starting_path}/test_projects/revenue")
-    runner.invoke(["clean"])
-    runner.invoke(["deps"])
-    runner.invoke(["compile"])
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")

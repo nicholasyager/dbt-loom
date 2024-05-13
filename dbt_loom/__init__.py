@@ -102,10 +102,11 @@ def convert_model_nodes_to_model_node_args(
     }
 
 
+@dataclass
 class LoomRunnableConfig:
     """A shim class to allow is_invalid_*_ref functions to correctly handle access for loom-injected models."""
 
-    restrict_access: bool = True
+    restrict_access: bool = False
     vars: VarProvider = VarProvider(vars={})
 
 
@@ -188,8 +189,8 @@ class dbtLoom(dbtPlugin):
     def dependency_wrapper(self, function) -> Callable:
         def outer_function(inner_self, node, target_model, dependencies) -> bool:
             if self.config is not None:
-                for manifest in self.config.manifests:
-                    dependencies[manifest.name] = LoomRunnableConfig()
+                for manifest_name in self.manifests.keys():
+                    dependencies[manifest_name] = LoomRunnableConfig()
 
             return function(inner_self, node, target_model, dependencies)
 
@@ -241,6 +242,8 @@ class dbtLoom(dbtPlugin):
             manifest = self._manifest_loader.load(manifest_reference)
             if manifest is None:
                 continue
+
+            self.manifests[manifest_reference.name] = manifest
 
             selected_nodes = identify_node_subgraph(manifest)
             self.models.update(convert_model_nodes_to_model_node_args(selected_nodes))
