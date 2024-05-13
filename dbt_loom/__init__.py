@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import os
 import re
 from pathlib import Path
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Set
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -126,6 +126,7 @@ class dbtLoom(dbtPlugin):
         )
 
         self._manifest_loader = ManifestLoader()
+        self.manifests: Dict[str, Dict] = {}
 
         self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
         self.models: Dict[str, LoomModelNodeArgs] = {}
@@ -146,6 +147,12 @@ class dbtLoom(dbtPlugin):
             )
         )
 
+        dbt.parser.manifest.ManifestLoader.check_valid_group_config_node = (  # type: ignore
+            self.group_validation_wrapper(
+                dbt.parser.manifest.ManifestLoader.check_valid_group_config_node  # type: ignore
+            )
+        )
+
         dbt.contracts.graph.nodes.ModelNode.from_args = (  # type: ignore
             self.model_node_wrapper(dbt.contracts.graph.nodes.ModelNode.from_args)  # type: ignore
         )
@@ -162,6 +169,22 @@ class dbtLoom(dbtPlugin):
 
         return outer_function
 
+    def group_validation_wrapper(self, function) -> Callable:
+        """Wrap the check_valid_group_config_node function to inject upstream group names."""
+
+        def outer_function(
+            inner_self, groupable_node, valid_group_names: Set[str]
+        ) -> bool:
+            new_groups: Set[str] = {
+                model.group for model in self.models.values() if model.group is not None
+            }
+
+            return function(
+                inner_self, groupable_node, valid_group_names.union(new_groups)
+            )
+
+        return outer_function
+
     def dependency_wrapper(self, function) -> Callable:
         def outer_function(inner_self, node, target_model, dependencies) -> bool:
             if self.config is not None:
@@ -171,6 +194,13 @@ class dbtLoom(dbtPlugin):
             return function(inner_self, node, target_model, dependencies)
 
         return outer_function
+
+    def get_groups(self) -> Set[str]:
+        """Get all groups defined in injected models."""
+
+        return {
+            model.group for model in self.models.values() if model.group is not None
+        }
 
     def read_config(self, path: Path) -> Optional[dbtLoomConfig]:
         """Read the dbt-loom configuration file."""
