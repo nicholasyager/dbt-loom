@@ -1,1 +1,1 @@
-select * from {{ ref('accounts') }}
+select * from {{ ref('seed_accounts') }}

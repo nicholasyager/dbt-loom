@@ -5,6 +5,6 @@ seeds:
       # cannot have both in latest version of 1.7.x.
       access: public
 
-  - name: accounts
+  - name: seed_accounts
     config:
       access: private

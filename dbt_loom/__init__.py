@@ -6,7 +6,7 @@ from typing import Callable, Dict, Optional
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
-
+from dbt.contracts.graph.nodes import ModelNode
 
 from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
@@ -30,16 +30,18 @@ class LoomModelNodeArgs(ModelNodeArgs):
     """A dbt-loom extension of ModelNodeArgs to preserve resource types across lineages."""
 
     resource_type: NodeType = NodeType.Model
+    group: Optional[str] = None
 
     def __init__(self, **kwargs):
         super().__init__(
             **{
                 key: value
                 for key, value in kwargs.items()
-                if key not in ("resource_type")
+                if key not in ("resource_type", "group")
             }
         )
-        self.resource_type = kwargs["resource_type"]
+        self.resource_type = kwargs.get("resource_type", NodeType.Model)
+        self.group = kwargs.get("group")
 
     @property
     def unique_id(self) -> str:
@@ -90,7 +92,7 @@ def convert_model_nodes_to_model_node_args(
             identifier=node.identifier,
             **(
                 # Small bit of logic to support both pydantic 2 and pydantic 1
-                node.model_dump(exclude={"schema_name", "depends_on", "node_config"})
+                node.model_dump(exclude={"schema_name", "depends_on", "node_config"})  # type: ignore
                 if hasattr(node, "model_dump")
                 else node.dict(exclude={"schema_name", "depends_on", "node_config"})
             ),
@@ -144,7 +146,21 @@ class dbtLoom(dbtPlugin):
             )
         )
 
+        dbt.contracts.graph.nodes.ModelNode.from_args = (  # type: ignore
+            self.model_node_wrapper(dbt.contracts.graph.nodes.ModelNode.from_args)  # type: ignore
+        )
+
         super().__init__(project_name)
+
+    def model_node_wrapper(self, function) -> Callable:
+        """Wrap the ModelNode.from_args function and inject extra properties from the LoomModelNodeArgs."""
+
+        def outer_function(args: LoomModelNodeArgs) -> ModelNode:
+            model = function(args)
+            model.group = args.group
+            return model
+
+        return outer_function
 
     def dependency_wrapper(self, function) -> Callable:
         def outer_function(inner_self, node, target_model, dependencies) -> bool:
