@@ -54,8 +54,8 @@ def test_dbt_core_runs_loom_plugin():
 
 
 @pytest.mark.skip(
-    reason="This only applies when a project has restrict-access: true, which bugs all dbt tests. "
-    "We can bring this back when that is not the case."
+    reason="This only applies when a project has restrict-access: true, which bugs all dbt tests "
+    "on private nodes. We can bring this back when that is not the case."
 )
 def test_dbt_loom_injects_dependencies():
     """Verify that dbt-core runs the dbt-loom plugin and that it flags access violations."""
