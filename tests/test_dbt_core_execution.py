@@ -21,18 +21,19 @@ def test_dbt_core_runs_loom_plugin():
     # Compile the revenue project
 
     os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
     runner.invoke(["deps"])
     runner.invoke(["compile"])
 
     # Run `build` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
 
     # Make sure nothing failed
     assert output.exception is None
 
-    runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["ls"])
 
     # Make sure nothing failed
@@ -75,11 +76,13 @@ def test_dbt_loom_injects_dependencies():
 
     # Compile the revenue project
     os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
     runner.invoke(["deps"])
     runner.invoke(["compile"])
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
 
@@ -112,11 +115,13 @@ def test_dbt_loom_injects_groups():
 
     # Compile the revenue project
     os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
     runner.invoke(["deps"])
     runner.invoke(["compile"])
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
 
