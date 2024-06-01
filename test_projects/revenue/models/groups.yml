@@ -1,0 +1,4 @@
+groups:
+  - name: sales
+    owner:
+      email: sales@example.com

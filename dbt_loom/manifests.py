@@ -41,6 +41,7 @@ class ManifestNode(BaseModel):
     latest_version: Optional[str] = None
     deprecation_date: Optional[datetime.datetime] = None
     access: Optional[str] = "protected"
+    group: Optional[str] = None
     generated_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
     depends_on: Optional[DependsOn] = None
     depends_on_nodes: List[str] = Field(default_factory=list)
