@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "dbt-loom"
-version = "0.5.4"
+version = "0.5.5"
 description = "A dbt-core plugin to import public nodes in multi-project deployments."
 authors = ["Nicholas Yager <yager@nicholasyager.com>"]
 readme = "README.md"
 packages = [{ include = "dbt_loom" }]
 
 [tool.commitizen]
-version = "0.5.4"
+version = "0.5.5"
 version_files = ["pyproject.toml:^version"]
 
 [tool.poetry.dependencies]
