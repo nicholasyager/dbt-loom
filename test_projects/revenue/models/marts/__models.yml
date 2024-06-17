@@ -2,13 +2,16 @@ version: 2
 
 models:
   - name: orders
-    description: Order overview data mart, offering key details for each order inlcluding if it's a customer's first order and a food vs. drink item breakdown. One row per order.
+    description: >
+      Order overview data mart, offering key details for each order including if it's a customer's
+      first order and a food vs. drink item breakdown. One row per order.
     access: public
     tests:
       - dbt_utils.expression_is_true:
           expression: "count_food_items + count_drink_items = count_items"
       - dbt_utils.expression_is_true:
           expression: "subtotal_food_items + subtotal_drink_items = subtotal"
+
     columns:
       - name: order_id
         description: The unique key of the orders mart.
@@ -38,9 +41,11 @@ models:
       - name: order_cost
         description: The sum of supply expenses to fulfill the order.
       - name: location_name
-        description: The full location name of where this order was placed. Denormalized from `stg_locations`.
+        description: >
+          The full location name of where this order was placed. Denormalized from `stg_locations`.
       - name: is_first_order
-        description: A boolean indicating if this order is from a new customer placing their first order.
+        description: >
+          A boolean indicating if this order is from a new customer placing their first order.
       - name: is_food_order
         description: A boolean indicating if this order included any food items.
       - name: is_drink_order
@@ -55,3 +60,16 @@ models:
         columns:
           - include: all
             exclude: [location_id]
+
+  - name: accounts
+    description: >
+      All accounts with whom we have done business. This is a very sensitive asset.
+    access: private
+    group: sales
+
+    columns:
+      - name: name
+        description: Name of the account.
+        tests:
+          - not_null
+          - unique

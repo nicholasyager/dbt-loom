@@ -29,7 +29,7 @@ vars:
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
 
-restrict-access: true
+restrict-access: false
 
 # In this example config, we tell dbt to build all models in the example/ directory
 # as tables. These settings can be overridden in the individual model files

@@ -2,11 +2,11 @@ from dataclasses import dataclass
 import os
 import re
 from pathlib import Path
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Set
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
-
+from dbt.contracts.graph.nodes import ModelNode
 
 from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
@@ -30,16 +30,18 @@ class LoomModelNodeArgs(ModelNodeArgs):
     """A dbt-loom extension of ModelNodeArgs to preserve resource types across lineages."""
 
     resource_type: NodeType = NodeType.Model
+    group: Optional[str] = None
 
     def __init__(self, **kwargs):
         super().__init__(
             **{
                 key: value
                 for key, value in kwargs.items()
-                if key not in ("resource_type")
+                if key not in ("resource_type", "group")
             }
         )
-        self.resource_type = kwargs["resource_type"]
+        self.resource_type = kwargs.get("resource_type", NodeType.Model)
+        self.group = kwargs.get("group")
 
     @property
     def unique_id(self) -> str:
@@ -90,7 +92,7 @@ def convert_model_nodes_to_model_node_args(
             identifier=node.identifier,
             **(
                 # Small bit of logic to support both pydantic 2 and pydantic 1
-                node.model_dump(exclude={"schema_name", "depends_on", "node_config"})
+                node.model_dump(exclude={"schema_name", "depends_on", "node_config"})  # type: ignore
                 if hasattr(node, "model_dump")
                 else node.dict(exclude={"schema_name", "depends_on", "node_config"})
             ),
@@ -100,10 +102,11 @@ def convert_model_nodes_to_model_node_args(
     }
 
 
+@dataclass
 class LoomRunnableConfig:
     """A shim class to allow is_invalid_*_ref functions to correctly handle access for loom-injected models."""
 
-    restrict_access: bool = True
+    restrict_access: bool = False
     vars: VarProvider = VarProvider(vars={})
 
 
@@ -124,6 +127,7 @@ class dbtLoom(dbtPlugin):
         )
 
         self._manifest_loader = ManifestLoader()
+        self.manifests: Dict[str, Dict] = {}
 
         self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
         self.models: Dict[str, LoomModelNodeArgs] = {}
@@ -144,17 +148,60 @@ class dbtLoom(dbtPlugin):
             )
         )
 
+        dbt.parser.manifest.ManifestLoader.check_valid_group_config_node = (  # type: ignore
+            self.group_validation_wrapper(
+                dbt.parser.manifest.ManifestLoader.check_valid_group_config_node  # type: ignore
+            )
+        )
+
+        dbt.contracts.graph.nodes.ModelNode.from_args = (  # type: ignore
+            self.model_node_wrapper(dbt.contracts.graph.nodes.ModelNode.from_args)  # type: ignore
+        )
+
         super().__init__(project_name)
+
+    def model_node_wrapper(self, function) -> Callable:
+        """Wrap the ModelNode.from_args function and inject extra properties from the LoomModelNodeArgs."""
+
+        def outer_function(args: LoomModelNodeArgs) -> ModelNode:
+            model = function(args)
+            model.group = args.group
+            return model
+
+        return outer_function
+
+    def group_validation_wrapper(self, function) -> Callable:
+        """Wrap the check_valid_group_config_node function to inject upstream group names."""
+
+        def outer_function(
+            inner_self, groupable_node, valid_group_names: Set[str]
+        ) -> bool:
+            new_groups: Set[str] = {
+                model.group for model in self.models.values() if model.group is not None
+            }
+
+            return function(
+                inner_self, groupable_node, valid_group_names.union(new_groups)
+            )
+
+        return outer_function
 
     def dependency_wrapper(self, function) -> Callable:
         def outer_function(inner_self, node, target_model, dependencies) -> bool:
             if self.config is not None:
-                for manifest in self.config.manifests:
-                    dependencies[manifest.name] = LoomRunnableConfig()
+                for manifest_name in self.manifests.keys():
+                    dependencies[manifest_name] = LoomRunnableConfig()
 
             return function(inner_self, node, target_model, dependencies)
 
         return outer_function
+
+    def get_groups(self) -> Set[str]:
+        """Get all groups defined in injected models."""
+
+        return {
+            model.group for model in self.models.values() if model.group is not None
+        }
 
     def read_config(self, path: Path) -> Optional[dbtLoomConfig]:
         """Read the dbt-loom configuration file."""
@@ -195,6 +242,8 @@ class dbtLoom(dbtPlugin):
             manifest = self._manifest_loader.load(manifest_reference)
             if manifest is None:
                 continue
+
+            self.manifests[manifest_reference.name] = manifest
 
             selected_nodes = identify_node_subgraph(manifest)
             self.models.update(convert_model_nodes_to_model_node_args(selected_nodes))
