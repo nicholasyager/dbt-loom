@@ -82,7 +82,7 @@ class ManifestLoader:
         if not config.path.exists():
             raise LoomConfigurationError(f"The path `{config.path}` does not exist.")
         
-        if config.path.endswith('.gz'):
+        if config.path.suffix == '.gz':
             with gzip.open(config.path, 'rt') as file:
                 return json.load(file)
         else:
