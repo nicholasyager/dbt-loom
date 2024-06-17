@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Dict, Optional
 
 import boto3
+import gzip
+from io import BytesIO
 from pydantic import BaseModel
 
 
@@ -39,7 +41,12 @@ class S3Client:
 
         # Deserialize the body of the object.
         try:
-            content = response["Body"].read().decode("utf-8")
+            if self.object_name.endswith(".gz"):
+                body = response["Body"].read()
+                with gzip.GzipFile(fileobj=BytesIO(body)) as gzipfile:
+                    content = gzipfile.read().decode('utf-8')
+            else:
+                content = response["Body"].read().decode("utf-8")
         except Exception:
             raise Exception(
                 f"Unable to read the data contained in the object `{self.object_name}"
