@@ -163,6 +163,20 @@ manifests:
       object_name: ${MANIFEST_PATH}
 ```
 
+### Gzipped files
+
+`dbt-loom` natively supports decompressing gzipped manifest files. This is useful to reduce object storage size and to minimize loading times when reading manifests from object storage. Compressed file detection is triggered when the file path for the manifest is suffixed
+with `.gz`.
+
+```yaml
+manifests:
+  - name: revenue
+    type: s3
+    config:
+      bucket_name: example_bucket_name
+      object_name: manifest.json.gz
+```
+
 ## How does it work?
 
 As of dbt-core 1.6.0-b8, there now exists a `dbtPlugin` class which defines functions that can
