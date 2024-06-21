@@ -1,4 +1,6 @@
 import json
+import gzip
+from io import BytesIO
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -47,7 +49,12 @@ class GCSClient:
                 f"`{self.bucket_name}`."
             )
 
-        manifest_json = blob.download_as_text()
+        if self.object_name.endswith('.gz'):
+            compressed_manifest = blob.download_as_bytes()
+            with gzip.GzipFile(fileobj=BytesIO(compressed_manifest)) as gzip_file:
+                manifest_json = gzip_file.read()
+        else:
+            manifest_json = blob.download_as_text()
 
         try:
             return json.loads(manifest_json)

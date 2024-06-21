@@ -1,5 +1,6 @@
 import datetime
 import json
+import gzip
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
@@ -80,8 +81,12 @@ class ManifestLoader:
         """Load a manifest dictionary from a local file"""
         if not config.path.exists():
             raise LoomConfigurationError(f"The path `{config.path}` does not exist.")
-
-        return json.load(open(config.path))
+        
+        if config.path.suffix == '.gz':
+            with gzip.open(config.path, 'rt') as file:
+                return json.load(file)
+        else:
+            return json.load(open(config.path))
 
     @staticmethod
     def load_from_dbt_cloud(config: DbtCloudReferenceConfig) -> Dict:

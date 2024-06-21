@@ -1,5 +1,7 @@
 import json
 import os
+import gzip
+from io import BytesIO
 from typing import Dict
 
 from azure.identity import DefaultAzureCredential
@@ -49,7 +51,11 @@ class AzureClient:
 
         # Deserialize the body of the object.
         try:
-            content = blob_client.download_blob(encoding="utf-8").readall()
+            if self.object_name.endswith('.gz'):
+                with gzip.GzipFile(fileobj=BytesIO(blob_client.download_blob().readall())) as gzipfile:
+                    content = gzipfile.read().decode('utf-8')
+            else:
+                content = blob_client.download_blob(encoding="utf-8").readall()
         except Exception:
             raise Exception(
                 f"Unable to read the data contained in the object `{self.object_name}"
