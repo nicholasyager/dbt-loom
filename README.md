@@ -61,7 +61,7 @@ manifests:
 ```
 
 By default, `dbt-loom` will look for `dbt_loom.config.yml` in your working directory. You can also set the
-`DBT_LOOM_CONFIG_PATH` environment variable.
+`DBT_LOOM_CONFIG` environment variable.
 
 ### Using dbt Cloud as an artifact source
 
