@@ -12,6 +12,8 @@ from dbt.plugins.manager import dbt_hook, dbtPlugin
 from dbt.plugins.manifest import PluginNodes
 from dbt.config.project import VarProvider
 
+from dbt_loom.shims import is_invalid_private_ref, is_invalid_protected_ref
+
 try:
     from dbt.artifacts.resources.types import NodeType
 except ModuleNotFoundError:
@@ -106,7 +108,7 @@ def convert_model_nodes_to_model_node_args(
 class LoomRunnableConfig:
     """A shim class to allow is_invalid_*_ref functions to correctly handle access for loom-injected models."""
 
-    restrict_access: bool = False
+    restrict_access: bool = True
     vars: VarProvider = VarProvider(vars={})
 
 
@@ -137,15 +139,12 @@ class dbtLoom(dbtPlugin):
         fire_event(
             msg="dbt-loom: Patching ref protection methods to support dbt-loom dependencies."
         )
+
         dbt.contracts.graph.manifest.Manifest.is_invalid_protected_ref = (  # type: ignore
-            self.dependency_wrapper(
-                dbt.contracts.graph.manifest.Manifest.is_invalid_protected_ref
-            )
+            self.dependency_wrapper(is_invalid_protected_ref)
         )
         dbt.contracts.graph.manifest.Manifest.is_invalid_private_ref = (  # type: ignore
-            self.dependency_wrapper(
-                dbt.contracts.graph.manifest.Manifest.is_invalid_private_ref
-            )
+            self.dependency_wrapper(is_invalid_private_ref)
         )
 
         dbt.parser.manifest.ManifestLoader.check_valid_group_config_node = (  # type: ignore
@@ -190,6 +189,9 @@ class dbtLoom(dbtPlugin):
         def outer_function(inner_self, node, target_model, dependencies) -> bool:
             if self.config is not None:
                 for manifest_name in self.manifests.keys():
+                    if manifest_name in dependencies:
+                        continue
+
                     dependencies[manifest_name] = LoomRunnableConfig()
 
             return function(inner_self, node, target_model, dependencies)

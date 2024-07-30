@@ -4,11 +4,9 @@ from pathlib import Path
 import dbt
 from dbt.cli.main import dbtRunner, dbtRunnerResult
 
-from dbt.contracts.graph.nodes import ModelNode
-
 
 import dbt.exceptions
-import pytest
+
 
 starting_path = os.getcwd()
 
@@ -53,10 +51,6 @@ def test_dbt_core_runs_loom_plugin():
     ), "The child project is missing expected nodes. Check that injection still works."
 
 
-@pytest.mark.skip(
-    reason="This only applies when a project has restrict-access: true, which bugs all dbt tests "
-    "on private nodes. We can bring this back when that is not the case."
-)
 def test_dbt_loom_injects_dependencies():
     """Verify that dbt-core runs the dbt-loom plugin and that it flags access violations."""
 
@@ -79,7 +73,7 @@ def test_dbt_loom_injects_dependencies():
             """
             with
             upstream as (
-                select * from {{ ref('stg_orders') }}
+                select * from {{ ref('revenue', 'stg_orders') }}
             )
 
             select * from upstream
