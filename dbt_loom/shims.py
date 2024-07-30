@@ -1,7 +1,11 @@
 from typing import Mapping, Optional
 from dbt.contracts.graph.nodes import GraphMemberNode, ModelNode
 from dbt.contracts.graph.manifest import MaybeNonSource
-from dbt.artifacts.resources.types import NodeType, AccessType
+
+try:
+    from dbt.artifacts.resources.types import NodeType, AccessType
+except ModuleNotFoundError:
+    from dbt.node_types import NodeType, AccessType  # type: ignore
 
 
 def is_invalid_protected_ref(

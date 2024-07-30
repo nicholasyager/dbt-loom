@@ -20,7 +20,6 @@ azure-storage-blob = "^12.19.0"
 azure-identity = "^1.15.0"
 types-pyyaml = "^6.0.12.12"
 types-networkx = "^3.2.1.20240313"
-dbt-common = "^1.7.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.0"
