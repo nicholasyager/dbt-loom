@@ -66,6 +66,7 @@ class ManifestNode(BaseModel):
         node_type = values.get("unique_id").split(".")[0]
         if v != node_type:
             return node_type
+        return v
 
     @property
     def identifier(self) -> str:
@@ -73,6 +74,14 @@ class ManifestNode(BaseModel):
             return self.name
 
         return self.relation_name.split(".")[-1].replace('"', "").replace("`", "")
+
+    def dump(self) -> Dict:
+        """Dump the ManifestNode to a Dict, with support for pydantic 1 and 2"""
+        exclude_set = {"schema_name", "depends_on", "node_config", "unique_id"}
+        if hasattr(self, "model_dump"):
+            return self.model_dump(exclude=exclude_set)  # type: ignore
+
+        return self.dict(exclude=exclude_set)
 
 
 class ManifestLoader:
