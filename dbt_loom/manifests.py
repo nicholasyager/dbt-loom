@@ -33,8 +33,9 @@ class ManifestNode(BaseModel):
     """A basic ManifestNode that can be referenced across projects."""
 
     name: str
-    resource_type: NodeType
     package_name: str
+    unique_id: str
+    resource_type: NodeType
     schema_name: str = Field(alias="schema")
     database: Optional[str] = None
     relation_name: Optional[str] = None
@@ -58,12 +59,29 @@ class ManifestNode(BaseModel):
             node for node in depends_on.nodes if node.split(".")[0] not in ("source")
         ]
 
+    @validator("resource_type", always=True)
+    def fix_resource_types(cls, v, values):
+        """If the resource type does not match the unique_id prefix, then rewrite the resource type."""
+
+        node_type = values.get("unique_id").split(".")[0]
+        if v != node_type:
+            return node_type
+        return v
+
     @property
     def identifier(self) -> str:
         if not self.relation_name:
             return self.name
 
         return self.relation_name.split(".")[-1].replace('"', "").replace("`", "")
+
+    def dump(self) -> Dict:
+        """Dump the ManifestNode to a Dict, with support for pydantic 1 and 2"""
+        exclude_set = {"schema_name", "depends_on", "node_config", "unique_id"}
+        if hasattr(self, "model_dump"):
+            return self.model_dump(exclude=exclude_set)  # type: ignore
+
+        return self.dict(exclude=exclude_set)
 
 
 class ManifestLoader:
@@ -81,9 +99,9 @@ class ManifestLoader:
         """Load a manifest dictionary from a local file"""
         if not config.path.exists():
             raise LoomConfigurationError(f"The path `{config.path}` does not exist.")
-        
-        if config.path.suffix == '.gz':
-            with gzip.open(config.path, 'rt') as file:
+
+        if config.path.suffix == ".gz":
+            with gzip.open(config.path, "rt") as file:
                 return json.load(file)
         else:
             return json.load(open(config.path))
