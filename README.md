@@ -54,7 +54,7 @@ upstream project's manifest files.
 
 ```yaml
 manifests:
-  - name: project_name
+  - name: project_name # This should match the project's real name
     type: file
     config:
       path: path/to/manifest.json

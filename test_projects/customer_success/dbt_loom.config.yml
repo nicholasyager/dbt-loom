@@ -1,5 +1,5 @@
 manifests:
-  - name: revenue
+  - name: potato
     type: file
     config:
       path: ../revenue/target/manifest.json
