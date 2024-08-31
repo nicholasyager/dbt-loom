@@ -114,7 +114,7 @@ class dbtLoom(dbtPlugin):
     """
 
     def __init__(self, project_name: str):
-        # Log the version of dbt-loom being intialized
+        # Log the version of dbt-loom being initialized
         fire_event(
             msg=f'Initializing dbt-loom={importlib.metadata.version("dbt-loom")}'
         )
@@ -240,7 +240,11 @@ class dbtLoom(dbtPlugin):
             if manifest is None:
                 continue
 
-            self.manifests[manifest_reference.name] = manifest
+            # Find the official project name from the manifest metadata and use that as the manifests key.
+            manifest_name = manifest.get("metadata", {}).get(
+                "project_name", manifest_reference.name
+            )
+            self.manifests[manifest_name] = manifest
 
             selected_nodes = identify_node_subgraph(manifest)
             self.models.update(convert_model_nodes_to_model_node_args(selected_nodes))
