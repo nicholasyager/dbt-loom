@@ -145,7 +145,7 @@ class ManifestLoader:
         if not config.path.path:
             raise InvalidManifestPath()
 
-        response = requests.get(config.path.path, stream=True)
+        response = requests.get(str(config.path), stream=True)
         response.raise_for_status()  # Check for request errors
 
         # Check for compression on the file. If compressed, store it in a buffer
