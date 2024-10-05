@@ -59,12 +59,13 @@ def test_load_from_remote_pass():
     """Test that ManifestLoader can load a remote JSON file via HTTP(S)."""
 
     example_content = {"foo": "bar"}
-    path = Path("example.json")
+    path = Path("example3.json")
+    base_url = "http://127.0.0.1:8000"
 
     with open(path, "w") as file:
         json.dump(example_content, file)
 
-    file_config = FileReferenceConfig(path=AnyUrl("http://127.0.0.1:8000/example.json"))
+    file_config = FileReferenceConfig(path=AnyUrl(f"{base_url}/example3.json"))
 
     # Invoke a server for hosting the test file.
     process = subprocess.Popen(["python3", "-m", "http.server", "8000"])

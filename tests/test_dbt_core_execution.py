@@ -46,6 +46,8 @@ def test_dbt_core_runs_loom_plugin():
         "revenue.orders.v2",
     }
 
+    os.chdir(starting_path)
+
     assert set(output.result).issuperset(
         subset
     ), "The child project is missing expected nodes. Check that injection still works."
@@ -88,6 +90,8 @@ def test_dbt_loom_injects_dependencies():
 
     path.unlink()
 
+    os.chdir(starting_path)
+
     # Make sure nothing failed
     assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
 
@@ -128,6 +132,8 @@ def test_dbt_loom_injects_groups():
     output: dbtRunnerResult = runner.invoke(["build"])
 
     path.unlink()
+
+    os.chdir(starting_path)
 
     # Make sure nothing failed
     assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
