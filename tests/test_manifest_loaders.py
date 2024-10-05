@@ -59,17 +59,14 @@ def test_load_from_path_fails_invalid_scheme(example_file):
 def test_load_from_remote_pass(example_file):
     """Test that ManifestLoader can load a remote JSON file via HTTP(S)."""
 
-    path, example_content = example_file
+    _, example_content = example_file
 
-    base_url = "http://127.0.0.1:8000"
-
-    file_config = FileReferenceConfig(path=AnyUrl(f"{base_url}/{path}"))
-
-    # Invoke a server for hosting the test file.
-    process = subprocess.Popen(["python3", "-m", "http.server", "8000"])
+    file_config = FileReferenceConfig(
+        path=AnyUrl(
+            "https://s3.us-east-2.amazonaws.com/com.nicholasyager.dbt-loom/example.json"
+        )
+    )
 
     output = ManifestLoader.load_from_http(file_config)
-
-    process.terminate()
 
     assert output == example_content
