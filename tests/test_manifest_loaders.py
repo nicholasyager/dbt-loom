@@ -24,7 +24,7 @@ def test_load_from_local_filesystem_pass(example_file):
     path, example_content = example_file
 
     file_config = FileReferenceConfig(
-        path=AnyUrl("file://" + str(Path(path).absolute()))
+        path=AnyUrl(url="file://" + str(Path(path).absolute()))
     )
 
     output = ManifestLoader.load_from_local_filesystem(file_config)
@@ -63,7 +63,7 @@ def test_load_from_remote_pass(example_file):
 
     file_config = FileReferenceConfig(
         path=AnyUrl(
-            "https://s3.us-east-2.amazonaws.com/com.nicholasyager.dbt-loom/example.json"
+            url="https://s3.us-east-2.amazonaws.com/com.nicholasyager.dbt-loom/example.json"
         )
     )
 
