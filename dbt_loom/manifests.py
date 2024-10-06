@@ -99,7 +99,7 @@ class InvalidManifestPath(Exception):
 class ManifestLoader:
     def __init__(self):
         self.loading_functions = {
-            ManifestReferenceType.file: self.load_from_local_filesystem,
+            ManifestReferenceType.file: self.load_from_path,
             ManifestReferenceType.dbt_cloud: self.load_from_dbt_cloud,
             ManifestReferenceType.gcs: self.load_from_gcs,
             ManifestReferenceType.s3: self.load_from_s3,

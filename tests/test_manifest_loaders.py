@@ -5,7 +5,11 @@ from typing import Dict, Generator, Tuple
 from urllib.parse import urlparse
 
 import pytest
-from dbt_loom.config import FileReferenceConfig
+from dbt_loom.config import (
+    FileReferenceConfig,
+    ManifestReference,
+    ManifestReferenceType,
+)
 from dbt_loom.manifests import ManifestLoader, UnknownManifestPathType
 
 
@@ -73,3 +77,23 @@ def test_load_from_remote_pass(example_file):
     output = ManifestLoader.load_from_http(file_config)
 
     assert output == example_content
+
+
+def test_manifest_loader_selection(example_file):
+    """Confirm scheme parsing works for picking the manifest loader."""
+    _, example_content = example_file
+    manifest_loader = ManifestLoader()
+
+    file_config = FileReferenceConfig(
+        path=urlparse(
+            "https://s3.us-east-2.amazonaws.com/com.nicholasyager.dbt-loom/example.json"
+        ),
+    )
+
+    manifest_reference = ManifestReference(
+        name="example", type=ManifestReferenceType.file, config=file_config
+    )
+
+    manifest = manifest_loader.load(manifest_reference)
+
+    assert manifest == example_content
