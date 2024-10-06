@@ -4,6 +4,7 @@ import json
 import gzip
 from pathlib import Path
 from typing import Dict, List, Optional
+from urllib.parse import urlunparse
 
 from pydantic import BaseModel, Field, validator
 import requests
@@ -145,7 +146,7 @@ class ManifestLoader:
         if not config.path.path:
             raise InvalidManifestPath()
 
-        response = requests.get(str(config.path), stream=True)
+        response = requests.get(urlunparse(config.path), stream=True)
         response.raise_for_status()  # Check for request errors
 
         # Check for compression on the file. If compressed, store it in a buffer

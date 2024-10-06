@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
-import subprocess
+
 from typing import Dict, Generator, Tuple
-from pydantic import AnyUrl
+from urllib.parse import urlparse
+
 import pytest
 from dbt_loom.config import FileReferenceConfig
 from dbt_loom.manifests import ManifestLoader, UnknownManifestPathType
@@ -24,7 +25,7 @@ def test_load_from_local_filesystem_pass(example_file):
     path, example_content = example_file
 
     file_config = FileReferenceConfig(
-        path=AnyUrl(url="file://" + str(Path(path).absolute()))
+        path=urlparse("file://" + str(Path(path).absolute()))
     )
 
     output = ManifestLoader.load_from_local_filesystem(file_config)
@@ -50,7 +51,9 @@ def test_load_from_path_fails_invalid_scheme(example_file):
     scheme is applied.
     """
 
-    file_config = FileReferenceConfig(path=AnyUrl("ftp://example.com/example.json"))  # type: ignore
+    file_config = FileReferenceConfig(
+        path=urlparse("ftp://example.com/example.json"),
+    )  # type: ignore
 
     with pytest.raises(UnknownManifestPathType):
         ManifestLoader.load_from_path(file_config)
@@ -62,9 +65,9 @@ def test_load_from_remote_pass(example_file):
     _, example_content = example_file
 
     file_config = FileReferenceConfig(
-        path=AnyUrl(
-            url="https://s3.us-east-2.amazonaws.com/com.nicholasyager.dbt-loom/example.json"
-        )
+        path=urlparse(
+            "https://s3.us-east-2.amazonaws.com/com.nicholasyager.dbt-loom/example.json"
+        ),
     )
 
     output = ManifestLoader.load_from_http(file_config)
