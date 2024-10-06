@@ -34,6 +34,7 @@ flowchart LR
 dbt-loom currently supports obtaining model definitions from:
 
 - Local manifest files
+- Remote manifest files via http(s)
 - dbt Cloud
 - GCS
 - S3-compatible object storage services
@@ -57,6 +58,8 @@ manifests:
   - name: project_name # This should match the project's real name
     type: file
     config:
+      # A path to your manifest. This can be either a local path, or a remote
+      # path accessible via http(s).
       path: path/to/manifest.json
 ```
 
