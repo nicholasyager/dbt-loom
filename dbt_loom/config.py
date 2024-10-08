@@ -28,7 +28,7 @@ class FileReferenceConfig(BaseModel):
     path: ParseResult
 
     @validator("path", pre=True, always=True)
-    def default_path(cls, v, values):
+    def default_path(cls, v, values) -> ParseResult:
         """
         Check if the provided path is a valid URL. If not, convert it into an
         absolute file path.
@@ -38,7 +38,7 @@ class FileReferenceConfig(BaseModel):
             return v
 
         if bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", v)):
-            return v
+            return urlparse(v)
 
         return urlparse("file://" + str(Path(v).absolute()))
 
