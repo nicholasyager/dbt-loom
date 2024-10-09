@@ -1,8 +1,10 @@
 from enum import Enum
 from pathlib import Path
+import re
 from typing import List, Union
+from urllib.parse import ParseResult, urlparse
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from dbt_loom.clients.az_blob import AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloudReferenceConfig
@@ -23,7 +25,22 @@ class ManifestReferenceType(str, Enum):
 class FileReferenceConfig(BaseModel):
     """Configuration for a file reference"""
 
-    path: Path
+    path: ParseResult
+
+    @validator("path", pre=True, always=True)
+    def default_path(cls, v, values) -> ParseResult:
+        """
+        Check if the provided path is a valid URL. If not, convert it into an
+        absolute file path.
+        """
+
+        if isinstance(v, ParseResult):
+            return v
+
+        if bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", v)):
+            return urlparse(v)
+
+        return urlparse("file://" + str(Path(v).absolute()))
 
 
 class ManifestReference(BaseModel):
