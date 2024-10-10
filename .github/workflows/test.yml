@@ -36,7 +36,7 @@ jobs:
 
       - name: Install dbt-core
         shell: bash
-        run: python -m poetry add dbt-duckdb~=${{ matrix.dbt-version }} --allow-prereleases
+        run: python -m poetry add dbt-duckdb dbt-core~=${{ matrix.dbt-version }} --allow-prereleases
 
       - name: Test
         run: |
