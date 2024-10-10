@@ -18,7 +18,7 @@ flowchart LR
     dbt_runtime[dbt Core]:::background
     proprietary_plugin[Open Source Metadata Plugin]:::background
 
-    files[Local Files]:::background
+    files[Local and Remote Files]:::background
     object_storage[Object Storage]:::background
     discovery_api[dbt Cloud APIs]:::background
 
