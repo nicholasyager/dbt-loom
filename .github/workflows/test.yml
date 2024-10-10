@@ -12,7 +12,7 @@ jobs:
       matrix:
         python-version: [3.11]
         poetry-version: [1.4.2]
-        dbt-version: [1.6.0, 1.7.0, 1.8.0]
+        dbt-version: [1.6.0, 1.7.0, 1.8.0, 1.9.0b2]
 
     runs-on: ubuntu-latest
 
@@ -36,7 +36,7 @@ jobs:
 
       - name: Install dbt-core
         shell: bash
-        run: python -m poetry add dbt-duckdb~=${{ matrix.dbt-version }}
+        run: python -m poetry add dbt-core~=${{ matrix.dbt-version }} --allow-prereleases
 
       - name: Test
         run: |
