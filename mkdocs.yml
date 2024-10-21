@@ -1,0 +1,65 @@
+site_name: dbt_loom
+
+theme:
+
+  palette:
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  #   primary: black
+  logo: assets/dbt-logo.svg
+  name: material
+  features:
+    - navigation.footer
+    - navigation.instant
+    - navigation.tracking
+    - content.action.edit
+    - toc.integrate # check feedback
+
+extra:
+  version:
+    provider: mike
+
+markdown_extensions:
+  - attr_list # needed to allow providing width
+  - md_in_html # to allow Markdown in details
+  - toc:
+      toc_depth: 3
+      permalink: "#"
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.details # allow collapsible blocks
+  - admonition
+
+repo_url: https://github.com/nicholasyager/dbt-loom
+repo_name: nicholasyager/dbt-loom
+edit_uri: edit/main/docs/
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
