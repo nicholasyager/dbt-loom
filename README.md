@@ -44,7 +44,7 @@ dbt-loom currently supports obtaining model definitions from:
 
 ## Getting Started
 
-To being, install the `dbt-loom` python package.
+To begin, install the `dbt-loom` python package.
 
 ```console
 pip install dbt-loom
