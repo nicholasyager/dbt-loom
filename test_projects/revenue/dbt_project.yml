@@ -41,3 +41,9 @@ models:
       +materialized: view
     marts:
       +materialized: table
+  dbt_project_evaluator:
+    +access: private
+    marts:
+      dag:
+        fct_source_fanout:
+          +enabled: true

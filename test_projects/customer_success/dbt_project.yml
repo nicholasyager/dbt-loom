@@ -39,3 +39,10 @@ models:
       +materialized: view
     marts:
       +materialized: table
+
+  dbt_project_evaluator:
+    +schema: customer_success
+    marts:
+      dag:
+        fct_source_fanout:
+          +enabled: false
