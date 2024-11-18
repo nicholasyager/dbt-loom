@@ -247,7 +247,17 @@ class dbtLoom(dbtPlugin):
             self.manifests[manifest_name] = manifest
 
             selected_nodes = identify_node_subgraph(manifest)
-            self.models.update(convert_model_nodes_to_model_node_args(selected_nodes))
+
+            # Remove nodes from excluded packages.
+            filtered_nodes = {
+                key: value
+                for key, value in selected_nodes.items()
+                if value.package_name not in manifest_reference.excluded_packages
+            }
+
+            loom_nodes = convert_model_nodes_to_model_node_args(filtered_nodes)
+
+            self.models.update(loom_nodes)
 
     @dbt_hook
     def get_nodes(self) -> PluginNodes:
