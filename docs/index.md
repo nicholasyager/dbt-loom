@@ -23,7 +23,6 @@ flowchart LR
   Project --> TOP --> Warehouse
 ```
 
-
 dbt-loom currently supports obtaining model definitions from:
 
 - Local manifest files
@@ -32,9 +31,6 @@ dbt-loom currently supports obtaining model definitions from:
 - GCS
 - S3-compatible object storage services
 - Azure Storage
-
-!!! warning 
-    dbt core's plugin functionality is still in beta. Please note that this may break in the future as dbt Labs solidifies the dbt plugin API in future versions.
 
 ## How does it work?
 
