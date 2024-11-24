@@ -1,9 +1,7 @@
 site_name: dbt_loom
 
 theme:
-
   palette:
-
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -23,7 +21,6 @@ theme:
         name: Switch to light mode
 
   #   primary: black
-  logo: assets/dbt-logo.svg
   name: material
   features:
     - navigation.footer
