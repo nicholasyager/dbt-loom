@@ -5,6 +5,11 @@
     "aliases": []
   },
   {
+    "version": "latest",
+    "title": "latest",
+    "aliases": []
+  },
+  {
     "version": "gh_pages",
     "title": "gh_pages",
     "aliases": []
