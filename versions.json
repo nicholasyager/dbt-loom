@@ -1,5 +1,10 @@
 [
   {
+    "version": "main",
+    "title": "main",
+    "aliases": []
+  },
+  {
     "version": "gh_pages",
     "title": "gh_pages",
     "aliases": []
