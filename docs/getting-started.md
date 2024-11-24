@@ -1,48 +1,4 @@
-# dbt-loom
-
-[![pypi version shield](https://img.shields.io/pypi/v/dbt-loom)](https://img.shields.io/pypi/v/dbt-loom)
-
-dbt-loom is a dbt Core plugin that weaves together multi-project deployments. dbt-loom works by fetching public model definitions from your dbt artifacts, and injecting those models into your dbt project.
-
-```mermaid
-flowchart LR
-
-    classDef black fill:#f2f2ebff, stroke:#000, color:#000
-    classDef background fill:#f2f2ebff, stroke:#000, color:#000
-    classDef hidden fill:#BADC3F, stroke:#BADC3F, color:#BADC3F
-
-   style TOP fill:#BADC3F, stroke:#000
-
-  subgraph TOP[Your Infrastructure]
-    direction TB
-    dbt_runtime[dbt Core]:::background
-    proprietary_plugin[Open Source Metadata Plugin]:::background
-
-    files[Local and Remote Files]:::background
-    object_storage[Object Storage]:::background
-    discovery_api[dbt Cloud APIs]:::background
-
-    discovery_api --> proprietary_plugin
-    files --> proprietary_plugin
-    object_storage --> proprietary_plugin
-    proprietary_plugin --> dbt_runtime
-  end
-
-  Project:::black --> TOP --> Warehouse:::black
-```
-
-dbt-loom currently supports obtaining model definitions from:
-
-- Local manifest files
-- Remote manifest files via http(s)
-- dbt Cloud
-- GCS
-- S3-compatible object storage services
-- Azure Storage
-
-:warning: **dbt Core's plugin functionality is still in beta. Please note that this may break in the future as dbt Labs solidifies the dbt plugin API in future versions.**
-
-## Getting Started
+# Getting Started
 
 To begin, install the `dbt-loom` python package.
 
@@ -66,23 +22,7 @@ manifests:
 By default, `dbt-loom` will look for `dbt_loom.config.yml` in your working directory. You can also set the
 `DBT_LOOM_CONFIG` environment variable.
 
-## How does it work?
-
-As of dbt-core 1.6.0-b8, there now exists a `dbtPlugin` class which defines functions that can
-be called by dbt-core's `PluginManger`. During different parts of the dbt-core lifecycle (such as graph linking and
-manifest writing), the `PluginManger` will be called and all plugins registered with the appropriate hook will be executed.
-
-dbt-loom implements a `get_nodes` hook, and uses a configuration file to parse manifests, identify public models, and
-inject those public models when called by `dbt-core`.
-
-## Advanced Features
-
-### Loading artifacts from remote sources
-
-`dbt-loom` supports automatically fetching manifest artifacts from a variety
-of remote sources.
-
-#### Using dbt Cloud as an artifact source
+### Using dbt Cloud as an artifact source
 
 You can use dbt-loom to fetch model definitions from dbt Cloud by setting up a `dbt-cloud` manifest in your `dbt-loom` config, and setting the `DBT_CLOUD_API_TOKEN` environment variable in your execution environment.
 
@@ -105,7 +45,7 @@ manifests:
       # which to fetch artifacts. Defaults to the last step.
 ```
 
-#### Using an S3-compatible object store as an artifact source
+### Using an S3-compatible object store as an artifact source
 
 You can use dbt-loom to fetch manifest files from S3-compatible object stores
 by setting up ab `s3` manifest in your `dbt-loom` config. Please note that this
@@ -123,7 +63,7 @@ manifests:
       # The object name of your manifest file.
 ```
 
-#### Using GCS as an artifact source
+### Using GCS as an artifact source
 
 You can use dbt-loom to fetch manifest files from Google Cloud Storage by setting up a `gcs` manifest in your `dbt-loom` config.
 
@@ -145,7 +85,7 @@ manifests:
       # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
 ```
 
-#### Using Azure Storage as an artifact source
+### Using Azure Storage as an artifact source
 
 You can use dbt-loom to fetch manifest files from Azure Storage
 by setting up an `azure` manifest in your `dbt-loom` config. The `azure` type implements
@@ -195,32 +135,3 @@ manifests:
       bucket_name: example_bucket_name
       object_name: manifest.json.gz
 ```
-
-### Exclude nested packages
-
-In some circumstances, like running `dbt-project-evaluator`, you may not want a
-given package in an upstream project to be imported into a downstream project.
-You can manually exclude downstream projects from injecting assets from packages
-by adding the package name to the downstream project's `excluded_packages` list.
-
-```yaml
-manifests:
-  - name: revenue
-    type: file
-    config:
-      path: ../revenue/target/manifest.json
-    excluded_packages:
-      # Provide the string name of the package to exclude during injection.
-      - dbt_project_evaluator
-```
-
-## Known Caveats
-
-Cross-project dependencies are a relatively new development, and dbt-core plugins
-are still in beta. As such there are a number of caveats to be aware of when using
-this tool.
-
-1. dbt plugins are only supported in dbt-core version 1.6.0-b8 and newer. This means you must be using a dbt adapter
-   compatible with this version.
-2. `PluginNodeArgs` are not fully-realized dbt `ManifestNode`s, so documentation generated by `dbt docs generate` may
-   be sparse when viewing injected models.
