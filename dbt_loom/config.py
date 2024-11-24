@@ -4,7 +4,7 @@ import re
 from typing import List, Union
 from urllib.parse import ParseResult, urlparse
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, Field, validator
 
 from dbt_loom.clients.az_blob import AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloudReferenceConfig
@@ -55,6 +55,7 @@ class ManifestReference(BaseModel):
         S3ReferenceConfig,
         AzureReferenceConfig,
     ]
+    excluded_packages: List[str] = Field(default_factory=list)
 
 
 class dbtLoomConfig(BaseModel):

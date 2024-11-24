@@ -46,6 +46,9 @@ def test_dbt_core_runs_loom_plugin():
         "revenue.orders.v2",
     }
 
+    # Excluded packages do not get injected and loaded into a manifest.
+    assert not any(["dbt_project_evaluator" in item for item in output.result])
+
     os.chdir(starting_path)
 
     assert set(output.result).issuperset(
