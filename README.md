@@ -40,8 +40,6 @@ dbt-loom currently supports obtaining model definitions from:
 - S3-compatible object storage services
 - Azure Storage
 
-:warning: **dbt Core's plugin functionality is still in beta. Please note that this may break in the future as dbt Labs solidifies the dbt plugin API in future versions.**
-
 ## Getting Started
 
 To begin, install the `dbt-loom` python package.

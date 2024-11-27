@@ -60,3 +60,4 @@ edit_uri: edit/main/docs/
 nav:
   - Home: index.md
   - Getting started: getting-started.md
+  - Advanced configuration: advanced-configuration.md

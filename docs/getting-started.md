@@ -22,7 +22,7 @@ manifests:
 By default, `dbt-loom` will look for `dbt_loom.config.yml` in your working directory. You can also set the
 `DBT_LOOM_CONFIG` environment variable.
 
-### Using dbt Cloud as an artifact source
+## Using dbt Cloud as an artifact source
 
 You can use dbt-loom to fetch model definitions from dbt Cloud by setting up a `dbt-cloud` manifest in your `dbt-loom` config, and setting the `DBT_CLOUD_API_TOKEN` environment variable in your execution environment.
 
@@ -45,7 +45,7 @@ manifests:
       # which to fetch artifacts. Defaults to the last step.
 ```
 
-### Using an S3-compatible object store as an artifact source
+## Using an S3-compatible object store as an artifact source
 
 You can use dbt-loom to fetch manifest files from S3-compatible object stores
 by setting up ab `s3` manifest in your `dbt-loom` config. Please note that this
@@ -63,7 +63,7 @@ manifests:
       # The object name of your manifest file.
 ```
 
-### Using GCS as an artifact source
+## Using GCS as an artifact source
 
 You can use dbt-loom to fetch manifest files from Google Cloud Storage by setting up a `gcs` manifest in your `dbt-loom` config.
 
@@ -85,7 +85,7 @@ manifests:
       # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
 ```
 
-### Using Azure Storage as an artifact source
+## Using Azure Storage as an artifact source
 
 You can use dbt-loom to fetch manifest files from Azure Storage
 by setting up an `azure` manifest in your `dbt-loom` config. The `azure` type implements
@@ -102,36 +102,4 @@ manifests:
       account_name: <YOUR AZURE STORAGE ACCOUNT NAME> # The name of your Azure Storage account
       container_name: <YOUR AZURE STORAGE CONTAINER NAME> # The name of your Azure Storage container
       object_name: <YOUR OBJECT NAME> # The object name of your manifest file.
-```
-
-### Using environment variables
-
-You can easily incorporate your own environment variables into the config file. This allows for dynamic configuration values that can change based on the environment. To specify an environment variable in the `dbt-loom` config file, use one of the following formats:
-
-`${ENV_VAR}` or `$ENV_VAR`
-
-#### Example:
-
-```yaml
-manifests:
-  - name: revenue
-    type: gcs
-    config:
-      project_id: ${GCP_PROJECT}
-      bucket_name: ${GCP_BUCKET}
-      object_name: ${MANIFEST_PATH}
-```
-
-### Gzipped files
-
-`dbt-loom` natively supports decompressing gzipped manifest files. This is useful to reduce object storage size and to minimize loading times when reading manifests from object storage. Compressed file detection is triggered when the file path for the manifest is suffixed
-with `.gz`.
-
-```yaml
-manifests:
-  - name: revenue
-    type: s3
-    config:
-      bucket_name: example_bucket_name
-      object_name: manifest.json.gz
 ```

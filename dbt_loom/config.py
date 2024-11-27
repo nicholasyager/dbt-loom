@@ -62,6 +62,7 @@ class dbtLoomConfig(BaseModel):
     """Configuration for dbt Loom"""
 
     manifests: List[ManifestReference]
+    enable_telemetry: bool = False
 
 
 class LoomConfigurationError(BaseException):
