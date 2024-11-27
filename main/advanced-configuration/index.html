@@ -9,23 +9,23 @@
       
       
       
+        <link rel="prev" href="../getting-started/">
       
-        <link rel="next" href="getting-started/">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.45">
     
     
       
-        <title>dbt_loom</title>
+        <title>Advanced configuration - dbt_loom</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.0253249f.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -44,7 +44,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dbt-loom" class="md-skip">
+        <a href="#advanced-configuration" class="md-skip">
           Skip to content
         </a>
       
@@ -90,7 +90,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="dbt_loom" class="md-header__button md-logo" aria-label="dbt_loom" data-md-component="logo">
+    <a href=".." title="dbt_loom" class="md-header__button md-logo" aria-label="dbt_loom" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Advanced configuration
             
           </span>
         </div>
@@ -225,7 +225,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="dbt_loom" class="md-nav__button md-logo" aria-label="dbt_loom" data-md-component="logo">
+    <a href=".." title="dbt_loom" class="md-nav__button md-logo" aria-label="dbt_loom" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -252,6 +252,46 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -268,18 +308,18 @@
           
   
   <span class="md-ellipsis">
-    Home
+    Advanced configuration
   </span>
   
 
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="." class="md-nav__link md-nav__link--active">
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Home
+    Advanced configuration
   </span>
   
 
@@ -301,18 +341,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#how-does-it-work" class="md-nav__link">
+  <a href="#using-environment-variables-in-the-dbt-loom-config" class="md-nav__link">
     <span class="md-ellipsis">
-      How does it work?
+      Using environment variables in the dbt-loom config
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using environment variables in the dbt-loom config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exclude-nested-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exclude nested packages
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#known-caveats" class="md-nav__link">
+  <a href="#gzipped-files" class="md-nav__link">
     <span class="md-ellipsis">
-      Known Caveats
+      Gzipped files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enabling-telemetry" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enabling Telemetry
     </span>
   </a>
   
@@ -322,46 +395,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="getting-started/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Getting started
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="advanced-configuration/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Advanced configuration
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -381,7 +414,7 @@
                   
 
   
-    <a href="https://github.com/nicholasyager/dbt-loom/edit/main/docs/index.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/nicholasyager/dbt-loom/edit/main/docs/advanced-configuration.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -389,51 +422,54 @@
   
 
 
-<h1 id="dbt-loom">dbt-loom<a class="headerlink" href="#dbt-loom" title="Permanent link">#</a></h1>
-<p><code>dbt-loom</code> is a dbt Core plugin that weaves together multi-project deployments. It works by fetching public model definitions from your dbt artifacts, and injecting those models into your dbt project.</p>
-<pre class="mermaid"><code>flowchart LR
-
-   subgraph TOP[Your Infrastructure]
-    direction TB
-    dbt_runtime[dbt Core]
-    proprietary_plugin[Open Source Metadata Plugin]
-
-    files[Local and Remote Files]
-    object_storage[Object Storage]
-    discovery_api[dbt Cloud APIs]
-
-    discovery_api --&gt; proprietary_plugin
-    files --&gt; proprietary_plugin
-    object_storage --&gt; proprietary_plugin
-    proprietary_plugin --&gt; dbt_runtime
-  end
-
-  Project --&gt; TOP --&gt; Warehouse</code></pre>
-<p>dbt-loom currently supports obtaining model definitions from:</p>
-<ul>
-<li>Local manifest files</li>
-<li>Remote manifest files via http(s)</li>
-<li>dbt Cloud</li>
-<li>GCS</li>
-<li>S3-compatible object storage services</li>
-<li>Azure Storage</li>
-</ul>
-<h2 id="how-does-it-work">How does it work?<a class="headerlink" href="#how-does-it-work" title="Permanent link">#</a></h2>
-<p>As of dbt-core 1.6.0-b8, there now exists a <code>dbtPlugin</code> class which defines functions that can
-be called by dbt-core's <code>PluginManger</code>. During different parts of the dbt-core lifecycle (such as graph linking and
-manifest writing), the <code>PluginManger</code> will be called and all plugins registered with the appropriate hook will be executed.</p>
-<p>dbt-loom implements a <code>get_nodes</code> hook, and uses a configuration file to parse manifests, identify public models, and
-inject those public models when called by <code>dbt-core</code>.</p>
-<h2 id="known-caveats">Known Caveats<a class="headerlink" href="#known-caveats" title="Permanent link">#</a></h2>
-<p>Cross-project dependencies are a relatively new development, and dbt-core plugins
-are still in beta. As such there are a number of caveats to be aware of when using
-this tool.</p>
-<ol>
-<li>dbt plugins are only supported in dbt-core version 1.6.0-b8 and newer. This means you must be using a dbt adapter
-   compatible with this version.</li>
-<li><code>PluginNodeArgs</code> are not fully-realized dbt <code>ManifestNode</code>s, so documentation generated by <code>dbt docs generate</code> may
-   be sparse when viewing injected models.</li>
-</ol>
+<h1 id="advanced-configuration">Advanced Configuration<a class="headerlink" href="#advanced-configuration" title="Permanent link">#</a></h1>
+<p><code>dbt-loom</code> also has a couple advanced configuration options for power users.</p>
+<h2 id="using-environment-variables-in-the-dbt-loom-config">Using environment variables in the <code>dbt-loom</code> config<a class="headerlink" href="#using-environment-variables-in-the-dbt-loom-config" title="Permanent link">#</a></h2>
+<p>You can easily incorporate your own environment variables into the config file. This allows for dynamic configuration values that can change based on the environment. To specify an environment variable in the <code>dbt-loom</code> config file, use one of the following formats:</p>
+<p><code>${ENV_VAR}</code> or <code>$ENV_VAR</code></p>
+<h3 id="example">Example:<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">manifests</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">revenue</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gcs</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">project_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${GCP_PROJECT}</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">bucket_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${GCP_BUCKET}</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">object_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MANIFEST_PATH}</span>
+</span></code></pre></div>
+<h2 id="exclude-nested-packages">Exclude nested packages<a class="headerlink" href="#exclude-nested-packages" title="Permanent link">#</a></h2>
+<p>In some circumstances, like running <code>dbt-project-evaluator</code>, you may not want a
+given package in an upstream project to be imported into a downstream project.
+You can manually exclude downstream projects from injecting assets from packages
+by adding the package name to the downstream project's <code>excluded_packages</code> list.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">manifests</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">revenue</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">      </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../revenue/target/manifest.json</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">excluded_packages</span><span class="p">:</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="c1"># Provide the string name of the package to exclude during injection.</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dbt_project_evaluator</span>
+</span></code></pre></div>
+<h2 id="gzipped-files">Gzipped files<a class="headerlink" href="#gzipped-files" title="Permanent link">#</a></h2>
+<p><code>dbt-loom</code> natively supports decompressing gzipped manifest files. This is useful to reduce object storage size and to minimize loading times when reading manifests from object storage. Compressed file detection is triggered when the file path for the manifest is suffixed
+with <code>.gz</code>.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">manifests</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">revenue</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">      </span><span class="nt">bucket_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_bucket_name</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">      </span><span class="nt">object_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manifest.json.gz</span>
+</span></code></pre></div>
+<h2 id="enabling-telemetry">Enabling Telemetry<a class="headerlink" href="#enabling-telemetry" title="Permanent link">#</a></h2>
+<p>By default, the <code>dbt-loom</code> plugin blocks outbound telemetry that reports on
+the use of this plugin. This is a privacy-preserving measure for <code>dbt-loom</code>
+users that does not impact the function of dbt-core and does not impede
+dbt-core development in any way. If you <em>want</em> this telemetry to be sent, you
+can re-enable this behavior by setting the <code>enable_telemetry</code> property
+in the <code>dbt_loom.config.yml</code> file.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">enable_telemetry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">manifests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</span></code></pre></div>
 
 
 
@@ -462,22 +498,22 @@ this tool.</p>
       
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
-        
           
-          <a href="getting-started/" class="md-footer__link md-footer__link--next" aria-label="Next: Getting started">
+          <a href="../getting-started/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Getting started">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Next
+                Previous
               </span>
               <div class="md-ellipsis">
                 Getting started
               </div>
             </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
           </a>
+        
         
       </nav>
     
@@ -504,10 +540,10 @@ this tool.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.footer", "navigation.instant", "navigation.tracking", "content.action.edit", "toc.integrate"], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.footer", "navigation.instant", "navigation.tracking", "content.action.edit", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>
