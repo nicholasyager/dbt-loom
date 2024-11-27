@@ -140,3 +140,25 @@ def test_dbt_loom_injects_groups():
 
     # Make sure nothing failed
     assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
+
+
+def test_dbt_core_telemetry_blocking():
+    """Verify that dbt-loom prevents telemetry about itself from being sent."""
+    import shutil
+
+    runner = dbtRunner()
+
+    # Compile the revenue project
+
+    os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
+    runner.invoke(["deps"])
+    shutil.rmtree("logs")
+    runner.invoke(["compile"])
+
+    # Check that no plugin events were sent. This is important to verify that
+    # telemetry blocking is working.
+    with open("logs/dbt.log") as log_file:
+        assert "plugin_get_nodes" not in log_file.read()
+
+    os.chdir(starting_path)
