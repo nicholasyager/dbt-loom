@@ -129,6 +129,15 @@ class dbtLoom(dbtPlugin):
         self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
         self.models: Dict[str, LoomModelNodeArgs] = {}
 
+        self._patch_ref_protection()
+
+        if not self.config or (self.config and not self.config.enable_telemetry):
+            self._patch_plugin_telemetry()
+
+        super().__init__(project_name)
+
+    def _patch_ref_protection(self) -> None:
+        """Patch out the ref protection functions for proper protections"""
         import dbt.contracts.graph.manifest
 
         fire_event(
@@ -152,7 +161,31 @@ class dbtLoom(dbtPlugin):
             self.model_node_wrapper(dbt.contracts.graph.nodes.ModelNode.from_args)  # type: ignore
         )
 
-        super().__init__(project_name)
+    def _patch_plugin_telemetry(self) -> None:
+        """Patch the plugin telemetry function to prevent tracking of dbt plugins."""
+        import dbt.tracking
+
+        dbt.tracking.track = self.tracking_wrapper(dbt.tracking.track)
+
+    def tracking_wrapper(self, function) -> Callable:
+        """Wrap the telemetry `track` function and return early if we're tracking plugin actions."""
+
+        def outer_function(*args, **kwargs):
+            """Check the context of the snowplow tracker message for references to loom. Return if present."""
+
+            if any(
+                [
+                    self.__class__.__name__ in str(context_item.__dict__)
+                    or "dbt-loom" in str(context_item.__dict__)
+                    or "dbt_loom" in str(context_item.__dict__)
+                    for context_item in kwargs.get("context", [])
+                ]
+            ):
+                return
+
+            return function(*args, **kwargs)
+
+        return outer_function
 
     def model_node_wrapper(self, function) -> Callable:
         """Wrap the ModelNode.from_args function and inject extra properties from the LoomModelNodeArgs."""
