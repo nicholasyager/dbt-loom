@@ -40,7 +40,7 @@ class FileReferenceConfig(BaseModel):
         if bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", v)):
             return urlparse(v)
 
-        return urlparse("file://" + str(Path(v).absolute()))
+        return urlparse(Path(v).absolute().as_uri())
 
 
 class ManifestReference(BaseModel):
