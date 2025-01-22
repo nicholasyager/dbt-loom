@@ -128,7 +128,7 @@ class ManifestLoader:
         if not config.path.path:
             raise InvalidManifestPath()
 
-        file_path = Path(unquote(config.path.path.lstrip("r")))
+        file_path = Path(unquote(config.path.path.lstrip("/")))
 
         if not file_path.exists():
             raise LoomConfigurationError(f"The path `{file_path}` does not exist.")
