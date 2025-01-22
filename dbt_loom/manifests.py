@@ -2,6 +2,7 @@ import datetime
 from io import BytesIO
 import json
 import gzip
+import os
 from pathlib import Path
 from typing import Dict, List, Optional
 from urllib.parse import unquote, urlunparse
@@ -128,7 +129,16 @@ class ManifestLoader:
         if not config.path.path:
             raise InvalidManifestPath()
 
-        file_path = Path(unquote(config.path.path.lstrip("r")))
+        if config.path.netloc:
+            file_path = Path(f"//{config.path.netloc}{config.path.path}")
+        else:
+            file_path = Path(
+                unquote(
+                    config.path.path.lstrip("/")
+                    if os.name == "nt"
+                    else config.path.path
+                )
+            )
 
         if not file_path.exists():
             raise LoomConfigurationError(f"The path `{file_path}` does not exist.")
