@@ -4,7 +4,7 @@ import json
 import gzip
 from pathlib import Path
 from typing import Dict, List, Optional
-from urllib.parse import urlunparse
+from urllib.parse import unquote, urlunparse
 
 from pydantic import BaseModel, Field, validator
 import requests
@@ -128,7 +128,7 @@ class ManifestLoader:
         if not config.path.path:
             raise InvalidManifestPath()
 
-        file_path = Path(config.path.path)
+        file_path = Path(unquote(config.path.path.lstrip("r")))
 
         if not file_path.exists():
             raise LoomConfigurationError(f"The path `{file_path}` does not exist.")
