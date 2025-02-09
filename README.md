@@ -162,6 +162,20 @@ manifests:
       object_name: <YOUR OBJECT NAME> # The object name of your manifest file.
 ```
 
+#### Using Snowflake Stage as an artifact source
+
+You can use dbt-loom to fetch manifest files from Snowflake Stage by setting up an `snowflake` manifest in your `dbt-loom` config.
+
+
+```yaml
+manifests:
+  - name: project_name
+    type: snowflake
+    config:
+      stage: stage_name # Stage name, can include Database/Schema
+      stage_path: path/to/dbt/manifest.json # Path to manifest file in the stage
+```
+
 ### Using environment variables
 
 You can easily incorporate your own environment variables into the config file. This allows for dynamic configuration values that can change based on the environment. To specify an environment variable in the `dbt-loom` config file, use one of the following formats:
