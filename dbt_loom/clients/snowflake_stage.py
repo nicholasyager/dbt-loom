@@ -1,0 +1,63 @@
+import gzip
+import json
+import tempfile
+from pathlib import PurePath, Path, PosixPath, PurePosixPath
+from typing import Dict
+
+from dbt.config.runtime import load_profile
+from dbt.flags import get_flags
+from dbt.mp_context import get_mp_context
+from pydantic import BaseModel
+
+
+class SnowflakeReferenceConfig(BaseModel):
+    """Configuration for an reference stored in Snowflake Stage"""
+
+    stage: str
+    stage_path: str
+
+
+class SnowflakeClient:
+    """A client for loading manifest files from Snowflake Stage."""
+
+    def __init__(self, stage: str, stage_path: str) -> None:
+        self.stage = stage
+        self.stage_path = stage_path
+
+    def load_manifest(self) -> Dict:
+        """Load the manifest.json file from Snowflake stage."""
+
+        # Import locally to not require dbt-snowflake to be installed
+        from dbt.adapters.snowflake import SnowflakeAdapter
+
+        flags = get_flags()
+        profile = load_profile(
+            project_root=flags.PROJECT_DIR,
+            cli_vars=flags.VARS,
+            profile_name_override=flags.PROFILE,
+            target_override=flags.TARGET,
+        )
+        adapter = SnowflakeAdapter(profile, get_mp_context())
+        file_name = str(PurePosixPath(self.stage_path).name)
+        tmp_dir = tempfile.mkdtemp(prefix="dbt_loom_")
+        # Snowflake needs '/' path separators
+        tmp_dir_sf = tmp_dir.replace("\\", "/")
+
+        with adapter.connection_named("dbt-loom"):
+            get_query = f"get @{self.stage}/{self.stage_path} file://{tmp_dir_sf}/"
+            response, table = adapter.connections.execute(get_query)
+            if response.rows_affected == 0:
+                raise Exception(
+                    f"Failed to get file {self.stage}/{self.stage_path}: {response}"
+                )
+
+        download_path = Path(tmp_dir) / file_name
+
+        if download_path.name.endswith(".gz"):
+            with gzip.GzipFile(download_path) as gzip_file:
+                content = gzip_file.read().decode("utf-8")
+        else:
+            with download_path.open("r") as f:
+                content = f.read()
+
+        return json.loads(content)
