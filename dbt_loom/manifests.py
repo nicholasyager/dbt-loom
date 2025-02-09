@@ -10,6 +10,8 @@ from urllib.parse import unquote, urlunparse
 from pydantic import BaseModel, Field, validator
 import requests
 
+from dbt_loom.clients.snowflake_stage import SnowflakeReferenceConfig, SnowflakeClient
+
 try:
     from dbt.artifacts.resources.types import NodeType
 except ModuleNotFoundError:
@@ -105,6 +107,7 @@ class ManifestLoader:
             ManifestReferenceType.gcs: self.load_from_gcs,
             ManifestReferenceType.s3: self.load_from_s3,
             ManifestReferenceType.azure: self.load_from_azure,
+            ManifestReferenceType.snowflake: self.load_from_snowflake,
         }
 
     @staticmethod
@@ -211,6 +214,15 @@ class ManifestLoader:
         )
 
         return azure_client.load_manifest()
+
+    @staticmethod
+    def load_from_snowflake(config: SnowflakeReferenceConfig) -> Dict:
+        """Load a manifest dictionary from Snowflake stage."""
+        snowflake_client = SnowflakeClient(
+            stage=config.stage, stage_path=config.stage_path
+        )
+
+        return snowflake_client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""
