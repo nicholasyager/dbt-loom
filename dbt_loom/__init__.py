@@ -236,6 +236,9 @@ class dbtLoom(dbtPlugin):
     def read_config(self, path: Path) -> Optional[dbtLoomConfig]:
         """Read the dbt-loom configuration file."""
         if not path.exists():
+            fire_event(
+                msg=f"dbt-loom: config file `{path}` not exists"
+            )
             return None
 
         with open(path) as file:
