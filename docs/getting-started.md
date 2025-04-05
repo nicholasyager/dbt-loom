@@ -103,3 +103,17 @@ manifests:
       container_name: <YOUR AZURE STORAGE CONTAINER NAME> # The name of your Azure Storage container
       object_name: <YOUR OBJECT NAME> # The object name of your manifest file.
 ```
+
+#### Using Snowflake Stage as an artifact source
+
+You can use dbt-loom to fetch manifest files from Snowflake Stage by setting up an `snowflake` manifest in your `dbt-loom` config. Please note that this only
+works for dbt-core versions 1.8.0 and newer.
+
+```yaml
+manifests:
+  - name: project_name
+    type: snowflake
+    config:
+      stage: stage_name # Stage name, can include Database/Schema
+      stage_path: path/to/dbt/manifest.json # Path to manifest file in the stage
+```
