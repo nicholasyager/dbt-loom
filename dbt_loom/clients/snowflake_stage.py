@@ -22,7 +22,7 @@ class SnowflakeClient:
 
     def __init__(self, stage: str, stage_path: str) -> None:
         self.stage = stage
-        self.stage_path = stage_path
+        self.stage_path = stage_path.lstrip("/")
 
     def load_manifest(self) -> Dict:
         """Load the manifest.json file from Snowflake stage."""
