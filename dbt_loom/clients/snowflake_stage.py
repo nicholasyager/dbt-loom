@@ -31,7 +31,7 @@ class SnowflakeClient:
             from dbt.adapters.snowflake import SnowflakeAdapter
         except ImportError as exception:
             fire_event(
-                "dbt-core: Fatal error. Expected to find dbt-snowflake "
+                msg="dbt-core: Fatal error. Expected to find dbt-snowflake "
                 "installed to support loading the manifest from a Snowflake "
                 "stage."
             )
@@ -41,7 +41,7 @@ class SnowflakeClient:
             from dbt.mp_context import get_mp_context
         except ImportError as exception:
             fire_event(
-                "dbt-core: Fatal error. Unable to initialize a Snowflake "
+                msg="dbt-core: Fatal error. Unable to initialize a Snowflake "
                 "adapter. Loading from Snowflake stages requires dbt-core "
                 "1.8.0 and newer."
             )
