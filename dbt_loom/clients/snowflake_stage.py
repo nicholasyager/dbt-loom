@@ -33,7 +33,7 @@ class SnowflakeClient:
             fire_event(
                 msg="dbt-core: Fatal error. Expected to find dbt-snowflake "
                 "installed to support loading the manifest from a Snowflake "
-                "stage."
+                "stage.",
             )
             raise exception
 
