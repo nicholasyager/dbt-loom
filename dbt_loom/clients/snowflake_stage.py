@@ -1,12 +1,12 @@
 import gzip
 import json
 import tempfile
-from pathlib import PurePath, Path, PosixPath, PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Dict
 
 from dbt.config.runtime import load_profile
 from dbt.flags import get_flags
-from dbt.mp_context import get_mp_context
+from dbt_loom.logging import fire_event
 from pydantic import BaseModel
 
 
@@ -27,8 +27,25 @@ class SnowflakeClient:
     def load_manifest(self) -> Dict:
         """Load the manifest.json file from Snowflake stage."""
 
-        # Import locally to not require dbt-snowflake to be installed
-        from dbt.adapters.snowflake import SnowflakeAdapter
+        try:
+            from dbt.adapters.snowflake import SnowflakeAdapter
+        except ImportError as exception:
+            fire_event(
+                "dbt-core: Fatal error. Expected to find dbt-snowflake "
+                "installed to support loading the manifest from a Snowflake "
+                "stage."
+            )
+            raise exception
+
+        try:
+            from dbt.mp_context import get_mp_context
+        except ImportError as exception:
+            fire_event(
+                "dbt-core: Fatal error. Unable to initialize a Snowflake "
+                "adapter. Loading from Snowflake stages requires dbt-core "
+                "1.8.0 and newer."
+            )
+            raise exception
 
         flags = get_flags()
         profile = load_profile(
@@ -40,6 +57,7 @@ class SnowflakeClient:
         adapter = SnowflakeAdapter(profile, get_mp_context())
         file_name = str(PurePosixPath(self.stage_path).name)
         tmp_dir = tempfile.mkdtemp(prefix="dbt_loom_")
+
         # Snowflake needs '/' path separators
         tmp_dir_sf = tmp_dir.replace("\\", "/")
 
