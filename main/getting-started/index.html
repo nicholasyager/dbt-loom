@@ -367,6 +367,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#using-snowflake-stage-as-an-artifact-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Snowflake Stage as an artifact source
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -503,8 +512,8 @@ authenticate via a connection string.</p>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">      </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;YOUR AZURE STORAGE CONTAINER NAME&gt;</span><span class="w"> </span><span class="c1"># The name of your Azure Storage container</span>
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">      </span><span class="nt">object_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;YOUR OBJECT NAME&gt;</span><span class="w"> </span><span class="c1"># The object name of your manifest file.</span>
 </span></code></pre></div>
-<h4 id="using-snowflake-stage-as-an-artifact-source">Using Snowflake Stage as an artifact source<a class="headerlink" href="#using-snowflake-stage-as-an-artifact-source" title="Permanent link">#</a></h4>
-<p>You can use dbt-loom to fetch manifest files from Snowflake Stage by setting up an <code>snowflake</code> manifest in your <code>dbt-loom</code> config. Please note that this only
+<h2 id="using-snowflake-stage-as-an-artifact-source">Using Snowflake Stage as an artifact source<a class="headerlink" href="#using-snowflake-stage-as-an-artifact-source" title="Permanent link">#</a></h2>
+<p>You can use dbt-loom to fetch manifest files from Snowflake Stage by setting up a <code>snowflake</code> manifest in your <code>dbt-loom</code> config. Please note that this only
 works for dbt-core versions 1.8.0 and newer.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">manifests</span><span class="p">:</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">project_name</span>
