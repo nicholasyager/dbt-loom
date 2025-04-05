@@ -30,6 +30,8 @@ duckdb = ">=0.8.0"
 pre-commit = "^3.6.0"
 mypy = "^1.8.0"
 
+[tool.poetry.group.snowflake.dependencies]
+dbt-snowflake = "^1.6.0,<2.0.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs-material = "^9.5.45"
