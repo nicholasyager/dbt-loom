@@ -104,9 +104,9 @@ manifests:
       object_name: <YOUR OBJECT NAME> # The object name of your manifest file.
 ```
 
-#### Using Snowflake Stage as an artifact source
+## Using Snowflake Stage as an artifact source
 
-You can use dbt-loom to fetch manifest files from Snowflake Stage by setting up an `snowflake` manifest in your `dbt-loom` config. Please note that this only
+You can use dbt-loom to fetch manifest files from Snowflake Stage by setting up a `snowflake` manifest in your `dbt-loom` config. Please note that this only
 works for dbt-core versions 1.8.0 and newer.
 
 ```yaml
