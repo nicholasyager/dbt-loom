@@ -1,0 +1,8 @@
+manifests:
+  - name: potato
+    type: file
+    optional: true
+    config:
+      path: ../customer_success/target/manifest.json
+    excluded_packages:
+      - dbt_project_evaluator
