@@ -67,8 +67,8 @@ By default, `dbt-loom` will look for `dbt_loom.config.yml` in your working direc
 ## How does it work?
 
 As of dbt-core 1.6.0-b8, there now exists a `dbtPlugin` class which defines functions that can
-be called by dbt-core's `PluginManger`. During different parts of the dbt-core lifecycle (such as graph linking and
-manifest writing), the `PluginManger` will be called and all plugins registered with the appropriate hook will be executed.
+be called by dbt-core's `PluginManager`. During different parts of the dbt-core lifecycle (such as graph linking and
+manifest writing), the `PluginManager` will be called and all plugins registered with the appropriate hook will be executed.
 
 dbt-loom implements a `get_nodes` hook, and uses a configuration file to parse manifests, identify public models, and
 inject those public models when called by `dbt-core`.
