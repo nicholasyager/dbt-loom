@@ -233,8 +233,13 @@ class ManifestLoader:
                 "not have a valid type."
             )
 
-        manifest = self.loading_functions[manifest_reference.type](
-            manifest_reference.config
-        )
+        try:
+            manifest = self.loading_functions[manifest_reference.type](
+                manifest_reference.config
+            )
+        except LoomConfigurationError as e:
+            if getattr(manifest_reference, "optional", False):
+                return None
+            raise
 
         return manifest

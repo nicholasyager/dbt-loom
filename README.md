@@ -226,6 +226,19 @@ manifests:
       - dbt_project_evaluator
 ```
 
+### Optional manifests
+
+If you want to allow a manifest reference to be missing (e.g. using dbt-loom for an upstream project to see dependencies), you can set `optional: true` for that manifest entry. When `optional` is true and the manifest file does not exist, dbt-loom will skip loading it without raising an error. If `optional` is false or omitted (the default), missing manifests will cause an error.
+
+```yaml
+manifests:
+  - name: revenue
+    type: file
+    config:
+      path: ../revenue/target/manifest.json
+    optional: true  # If the manifest file is missing, do not raise an error
+```
+
 ## Known Caveats
 
 Cross-project dependencies are a relatively new development, and dbt-core plugins

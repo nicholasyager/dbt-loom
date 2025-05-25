@@ -9,6 +9,7 @@ from dbt_loom.config import (
     FileReferenceConfig,
     ManifestReference,
     ManifestReferenceType,
+    LoomConfigurationError,
 )
 from dbt_loom.manifests import ManifestLoader, UnknownManifestPathType
 
@@ -97,3 +98,35 @@ def test_manifest_loader_selection(example_file):
     manifest = manifest_loader.load(manifest_reference)
 
     assert manifest == example_content
+
+
+def test_load_from_local_filesystem_optional_missing():
+    """If the manifest file does not exist, it should not raise an error if optional=True."""
+    file_config = FileReferenceConfig(
+        path="not_exist_manifest.json"
+    )
+    manifest_reference = ManifestReference(
+        name="missing",
+        type=ManifestReferenceType.file,
+        config=file_config,
+        optional=True,
+    )
+    manifest_loader = ManifestLoader()
+    manifest = manifest_loader.load(manifest_reference)
+    assert manifest is None
+
+
+def test_load_from_local_filesystem_not_optional_missing():
+    """If the manifest file does not exist, it should raise an error if optional=False."""
+    file_config = FileReferenceConfig(
+        path="not_exist_manifest.json"
+    )
+    manifest_reference = ManifestReference(
+        name="missing",
+        type=ManifestReferenceType.file,
+        config=file_config,
+        optional=False,
+    )
+    manifest_loader = ManifestLoader()
+    with pytest.raises(LoomConfigurationError):
+        manifest_loader.load(manifest_reference)
