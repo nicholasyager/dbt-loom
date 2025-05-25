@@ -36,7 +36,7 @@ class DependsOn(BaseModel):
     macros: List[str] = Field(default_factory=list)
 
 
-class ManifestNode(BaseModel):
+class ManifestNode(BaseModel, use_enum_values=True):
     """A basic ManifestNode that can be referenced across projects."""
 
     name: str
