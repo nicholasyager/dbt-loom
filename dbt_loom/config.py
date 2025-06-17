@@ -11,6 +11,7 @@ from dbt_loom.clients.dbt_cloud import DbtCloudReferenceConfig
 from dbt_loom.clients.gcs import GCSReferenceConfig
 from dbt_loom.clients.s3 import S3ReferenceConfig
 from dbt_loom.clients.snowflake_stage import SnowflakeReferenceConfig
+from dbt_loom.clients.dbx import DatabricksReferenceConfig
 
 
 class ManifestReferenceType(str, Enum):
@@ -57,6 +58,7 @@ class ManifestReference(BaseModel):
         S3ReferenceConfig,
         AzureReferenceConfig,
         SnowflakeReferenceConfig,
+        DatabricksReferenceConfig,
     ]
     excluded_packages: List[str] = Field(default_factory=list)
     optional: bool = False

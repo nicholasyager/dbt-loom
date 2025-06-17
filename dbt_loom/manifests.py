@@ -21,6 +21,7 @@ from dbt_loom.clients.az_blob import AzureClient, AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig
 from dbt_loom.clients.gcs import GCSClient, GCSReferenceConfig
 from dbt_loom.clients.s3 import S3Client, S3ReferenceConfig
+from dbt_loom.clients.dbx import DatabricksClient, DatabricksReferenceConfig
 from dbt_loom.config import (
     FileReferenceConfig,
     LoomConfigurationError,
@@ -108,6 +109,7 @@ class ManifestLoader:
             ManifestReferenceType.s3: self.load_from_s3,
             ManifestReferenceType.azure: self.load_from_azure,
             ManifestReferenceType.snowflake: self.load_from_snowflake,
+            ManifestReferenceType.databricks: self.load_from_databricks
         }
 
     @staticmethod
@@ -223,6 +225,11 @@ class ManifestLoader:
         )
 
         return snowflake_client.load_manifest()
+
+    @staticmethod
+    def load_from_databricks(config: DatabricksReferenceConfig) -> Dict:
+        """Load a manifest dictionary from Databricks."""
+        databricks_client = DatabricksClient(path=config.path)
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""
