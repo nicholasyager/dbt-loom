@@ -31,6 +31,8 @@ dbt-loom currently supports obtaining model definitions from:
 - GCS
 - S3-compatible object storage services
 - Azure Storage
+- Snowflake stages
+- Databricks Volume, DBFS, and Workspace locations
 
 ## How does it work?
 

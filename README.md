@@ -39,6 +39,8 @@ dbt-loom currently supports obtaining model definitions from:
 - GCS
 - S3-compatible object storage services
 - Azure Storage
+- Snowflake stages
+- Databricks Volume, DBFS, and Workspace locations
 
 ## Getting Started
 
@@ -174,6 +176,24 @@ manifests:
     config:
       stage: stage_name # Stage name, can include Database/Schema
       stage_path: path/to/dbt/manifest.json # Path to manifest file in the stage
+```
+
+#### Using Databricks as an artifact source
+
+> [!WARNING]  
+> The `dbt-databricks` adapter or Python SDK is required to use the `databricks` manifest type
+
+You can use dbt-loom to fetch manifest files from Databricks Volumes, DBFS, and Workspace locations by setting up a `databricks`
+manifest in your `dbt-loom` config. The `databricks` type implements 
+[Client Unified Authentication](https://docs.databricks.com/aws/en/dev-tools/auth/unified-auth), supporting all environment variables
+and authentication mechanisms.
+
+```yaml
+manifests:
+  - name: project_name
+    type: databricks
+    config:
+      path: <WORKSPACE, VOLUME, OR DBFS PATH TO MANIFEST FILE>
 ```
 
 ### Using environment variables
