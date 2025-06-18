@@ -230,6 +230,7 @@ class ManifestLoader:
     def load_from_databricks(config: DatabricksReferenceConfig) -> Dict:
         """Load a manifest dictionary from Databricks."""
         databricks_client = DatabricksClient(path=config.path)
+        return databricks_client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""

@@ -23,6 +23,7 @@ class ManifestReferenceType(str, Enum):
     s3 = "s3"
     azure = "azure"
     snowflake = "snowflake"
+    databricks = "databricks"
 
 
 class FileReferenceConfig(BaseModel):
