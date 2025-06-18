@@ -21,8 +21,10 @@ flowchart LR
     files[Local and Remote Files]:::background
     object_storage[Object Storage]:::background
     discovery_api[dbt Cloud APIs]:::background
+    paradime_api[Paradime APIs]:::background
 
     discovery_api --> proprietary_plugin
+    paradime_api --> proprietary_plugin
     files --> proprietary_plugin
     object_storage --> proprietary_plugin
     proprietary_plugin --> dbt_runtime
@@ -36,6 +38,7 @@ dbt-loom currently supports obtaining model definitions from:
 - Local manifest files
 - Remote manifest files via http(s)
 - dbt Cloud
+- Paradime
 - GCS
 - S3-compatible object storage services
 - Azure Storage
@@ -103,6 +106,28 @@ manifests:
       step_id: <JOB STEP>
       # If your job generates multiple artifacts, you can set the step from
       # which to fetch artifacts. Defaults to the last step.
+```
+
+#### Using Paradime as an artifact source
+
+You can use dbt-loom to fetch model definitions from Paradime by setting up a `paradime` manifest in your `dbt-loom` config with your Paradime API credentials.
+
+```yaml
+manifests:
+  - name: project_name
+    type: paradime
+    config:
+      # It is recommended to use environment variables to set your API credentials.
+      api_key: <YOUR PARADIME API KEY>
+      api_secret: <YOUR PARADIME API SECRET>
+      api_endpoint: <PARADIME API ENDPOINT>
+
+      # The name of the Paradime Bolt schedule to fetch artifacts from.
+      schedule_name: <YOUR PARADIME SCHEDULE NAME>
+
+      # (Optional) The index of the command to fetch the artifact from. If not provided,
+      # it will search through all commands in the schedule run starting from the last command.
+      command_index: <YOUR PARADIME SCHEDULE COMMAND INDEX>
 ```
 
 #### Using an S3-compatible object store as an artifact source

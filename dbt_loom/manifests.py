@@ -19,6 +19,7 @@ except ModuleNotFoundError:
 
 from dbt_loom.clients.az_blob import AzureClient, AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig
+from dbt_loom.clients.paradime import ParadimeClient, ParadimeReferenceConfig
 from dbt_loom.clients.gcs import GCSClient, GCSReferenceConfig
 from dbt_loom.clients.s3 import S3Client, S3ReferenceConfig
 from dbt_loom.clients.dbx import DatabricksClient, DatabricksReferenceConfig
@@ -109,6 +110,7 @@ class ManifestLoader:
             ManifestReferenceType.s3: self.load_from_s3,
             ManifestReferenceType.azure: self.load_from_azure,
             ManifestReferenceType.snowflake: self.load_from_snowflake,
+            ManifestReferenceType.paradime: self.load_from_paradime,
             ManifestReferenceType.databricks: self.load_from_databricks
         }
 
@@ -226,6 +228,18 @@ class ManifestLoader:
 
         return snowflake_client.load_manifest()
 
+    @staticmethod
+    def load_from_paradime(config: ParadimeReferenceConfig) -> Dict:
+        """Load a manifest dictionary from Paradime."""
+        paradime_client = ParadimeClient(
+            schedule_name=config.schedule_name,
+            api_key=config.api_key,
+            api_secret=config.api_secret,
+            api_endpoint=config.api_endpoint,
+            command_index=config.command_index,
+        )
+        return paradime_client.load_manifest()
+    
     @staticmethod
     def load_from_databricks(config: DatabricksReferenceConfig) -> Dict:
         """Load a manifest dictionary from Databricks."""

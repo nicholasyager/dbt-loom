@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, validator
 from dbt_loom.clients.az_blob import AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloudReferenceConfig
 from dbt_loom.clients.gcs import GCSReferenceConfig
+from dbt_loom.clients.paradime import ParadimeReferenceConfig
 from dbt_loom.clients.s3 import S3ReferenceConfig
 from dbt_loom.clients.snowflake_stage import SnowflakeReferenceConfig
 from dbt_loom.clients.dbx import DatabricksReferenceConfig
@@ -19,6 +20,7 @@ class ManifestReferenceType(str, Enum):
 
     file = "file"
     dbt_cloud = "dbt_cloud"
+    paradime = "paradime"
     gcs = "gcs"
     s3 = "s3"
     azure = "azure"
@@ -55,6 +57,7 @@ class ManifestReference(BaseModel):
     config: Union[
         FileReferenceConfig,
         DbtCloudReferenceConfig,
+        ParadimeReferenceConfig,
         GCSReferenceConfig,
         S3ReferenceConfig,
         AzureReferenceConfig,
