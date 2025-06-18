@@ -4,9 +4,10 @@ import gzip
 from io import BytesIO
 from typing import Dict
 
-from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient
+
 from pydantic import BaseModel
+
+from dbt_loom.logging import fire_event
 
 
 class AzureReferenceConfig(BaseModel):
@@ -30,6 +31,18 @@ class AzureClient:
     def load_manifest(self) -> Dict:
         """Load the manifest.json file from Azure storage."""
 
+        try:
+            from azure.identity import DefaultAzureCredential
+        except ImportError:
+            fire_event(msg="dbt-loom expected azure-identity to be installed.")
+            raise
+
+        try:
+            from azure.storage.blob import BlobServiceClient
+        except ImportError:
+            fire_event(msg="dbt-loom expected azure-storage-blob to be installed.")
+            raise
+
         connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
         try:
             if connection_string:
@@ -51,9 +64,11 @@ class AzureClient:
 
         # Deserialize the body of the object.
         try:
-            if self.object_name.endswith('.gz'):
-                with gzip.GzipFile(fileobj=BytesIO(blob_client.download_blob().readall())) as gzipfile:
-                    content = gzipfile.read().decode('utf-8')
+            if self.object_name.endswith(".gz"):
+                with gzip.GzipFile(
+                    fileobj=BytesIO(blob_client.download_blob().readall())
+                ) as gzipfile:
+                    content = gzipfile.read().decode("utf-8")
             else:
                 content = blob_client.download_blob(encoding="utf-8").readall()
         except Exception:

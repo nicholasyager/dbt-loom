@@ -1,8 +1,9 @@
 import os
 from typing import Dict, Optional
 
-from paradime import Paradime
 from pydantic import BaseModel
+
+from dbt_loom.logging import fire_event
 
 
 class ParadimeReferenceConfig(BaseModel):
@@ -53,6 +54,12 @@ class ParadimeClient:
 
     def load_manifest(self) -> Dict:
         """Load the manifest.json for the latest run of the schedule."""
+
+        try:
+            from paradime import Paradime
+        except ImportError:
+            fire_event(msg="dbt-loom expected paradime-io to be installed.")
+            raise
 
         paradime_client = Paradime(
             api_key=self.api_key,
