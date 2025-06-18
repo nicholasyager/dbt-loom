@@ -376,6 +376,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#using-databricks-as-an-artifact-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Databricks as an artifact source
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -521,6 +530,21 @@ works for dbt-core versions 1.8.0 and newer.</p>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stage_name</span><span class="w"> </span><span class="c1"># Stage name, can include Database/Schema</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">      </span><span class="nt">stage_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path/to/dbt/manifest.json</span><span class="w"> </span><span class="c1"># Path to manifest file in the stage</span>
+</span></code></pre></div>
+<h2 id="using-databricks-as-an-artifact-source">Using Databricks as an artifact source<a class="headerlink" href="#using-databricks-as-an-artifact-source" title="Permanent link">#</a></h2>
+<blockquote>
+<p>[!WARNING]<br />
+The <code>dbt-databricks</code> adapter or Python SDK is required to use the <code>databricks</code> manifest type</p>
+</blockquote>
+<p>You can use dbt-loom to fetch manifest files from Databricks Volumes, DBFS, and Workspace locations by setting up a <code>databricks</code>
+manifest in your <code>dbt-loom</code> config. The <code>databricks</code> type implements 
+<a href="https://docs.databricks.com/aws/en/dev-tools/auth/unified-auth">Client Unified Authentication</a>, supporting all environment variables
+and authentication mechanisms.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">manifests</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">project_name</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">databricks</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">      </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;WORKSPACE, VOLUME, OR DBFS PATH TO MANIFEST FILE&gt;</span>
 </span></code></pre></div>
 
 
