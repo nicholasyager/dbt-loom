@@ -20,13 +20,13 @@ flowchart LR
 
     files[Local and Remote Files]:::background
     object_storage[Object Storage]:::background
-    discovery_api[dbt Cloud APIs]:::background
-    paradime_api[Paradime APIs]:::background
+    data_warehouse_storage[Data Warehouse Storage]:::background
+    discovery_api[dbt-core Hosting Providers]:::background
 
     discovery_api --> proprietary_plugin
-    paradime_api --> proprietary_plugin
     files --> proprietary_plugin
     object_storage --> proprietary_plugin
+    data_warehouse_storage --> proprietary_plugin
     proprietary_plugin --> dbt_runtime
   end
 
@@ -37,13 +37,16 @@ dbt-loom currently supports obtaining model definitions from:
 
 - Local manifest files
 - Remote manifest files via http(s)
-- dbt Cloud
-- Paradime
-- GCS
-- S3-compatible object storage services
-- Azure Storage
-- Snowflake stages
-- Databricks Volume, DBFS, and Workspace locations
+- `dbt-core` Hosting Providers
+  - dbt Cloud / Datacoves
+  - Paradime
+- Object Storage
+  - GCS
+  - S3-compatible object storage services
+  - Azure Storage
+- Database Warehouse Storage
+  - Snowflake stages
+  - Databricks Volume, DBFS, and Workspace locations
 
 ## Getting Started
 
