@@ -30,7 +30,8 @@ dbt-loom currently supports obtaining model definitions from:
 - Local manifest files
 - Remote manifest files via http(s)
 - `dbt-core` Hosting Providers
-  - dbt Cloud / Datacoves
+  - dbt Cloud
+  - Datacoves
   - Paradime
 - Object Storage
   - GCS
