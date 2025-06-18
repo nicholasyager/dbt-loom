@@ -24,7 +24,7 @@ By default, `dbt-loom` will look for `dbt_loom.config.yml` in your working direc
 
 ## Using dbt Cloud as an artifact source
 
-You can use dbt-loom to fetch model definitions from dbt Cloud by setting up a `dbt-cloud` manifest in your `dbt-loom` config, and setting the `DBT_CLOUD_API_TOKEN` environment variable in your execution environment.
+You can use dbt-loom to fetch model definitions from dbt Cloud by setting up a `dbt_cloud` manifest in your `dbt-loom` config, and setting the `DBT_CLOUD_API_TOKEN` environment variable in your execution environment.
 
 ```yaml
 manifests:
@@ -43,6 +43,29 @@ manifests:
       step_id: <JOB STEP>
       # If your job generates multiple artifacts, you can set the step from
       # which to fetch artifacts. Defaults to the last step.
+```
+
+## Using Paradime as an artifact source
+
+You can use dbt-loom to fetch model definitions from Paradime by setting up a
+`paradime` manifest in your `dbt-loom` config, and configuring as appropriate.
+
+```yaml
+manifests:
+  - name: paradime_project
+    type: paradime
+    config:
+      # It is recommended to use environment variables to set your API credentials.
+      api_key: <YOUR PARADIME API KEY>
+      api_secret: <YOUR PARADIME API SECRET>
+      api_endpoint: <PARADIME API ENDPOINT>
+
+      # The name of the Paradime Bolt schedule to fetch artifacts from.
+      schedule_name: <YOUR PARADIME SCHEDULE NAME>
+
+      # (Optional) The index of the command to fetch the artifact from. If not provided,
+      # it will search through all commands in the schedule run starting from the last command.
+      command_index: <YOUR PARADIME SCHEDULE COMMAND INDEX>
 ```
 
 ## Using an S3-compatible object store as an artifact source
@@ -120,11 +143,11 @@ manifests:
 
 ## Using Databricks as an artifact source
 
-> [!WARNING]  
+> [!WARNING]
 > The `dbt-databricks` adapter or Python SDK is required to use the `databricks` manifest type
 
 You can use dbt-loom to fetch manifest files from Databricks Volumes, DBFS, and Workspace locations by setting up a `databricks`
-manifest in your `dbt-loom` config. The `databricks` type implements 
+manifest in your `dbt-loom` config. The `databricks` type implements
 [Client Unified Authentication](https://docs.databricks.com/aws/en/dev-tools/auth/unified-auth), supporting all environment variables
 and authentication mechanisms.
 

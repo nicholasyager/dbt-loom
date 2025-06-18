@@ -20,13 +20,13 @@ flowchart LR
 
     files[Local and Remote Files]:::background
     object_storage[Object Storage]:::background
-    discovery_api[dbt Cloud APIs]:::background
-    paradime_api[Paradime APIs]:::background
+    data_warehouse_storage[Data Warehouse Storage]:::background
+    discovery_api[dbt-core Hosting Providers]:::background
 
     discovery_api --> proprietary_plugin
-    paradime_api --> proprietary_plugin
     files --> proprietary_plugin
     object_storage --> proprietary_plugin
+    data_warehouse_storage --> proprietary_plugin
     proprietary_plugin --> dbt_runtime
   end
 
@@ -37,13 +37,17 @@ dbt-loom currently supports obtaining model definitions from:
 
 - Local manifest files
 - Remote manifest files via http(s)
-- dbt Cloud
-- Paradime
-- GCS
-- S3-compatible object storage services
-- Azure Storage
-- Snowflake stages
-- Databricks Volume, DBFS, and Workspace locations
+- `dbt-core` Hosting Providers
+  - dbt Cloud
+  - Datacoves
+  - Paradime
+- Object Storage
+  - GCS
+  - S3-compatible object storage services
+  - Azure Storage
+- Database Warehouse Storage
+  - Snowflake stages
+  - Databricks Volume, DBFS, and Workspace locations
 
 ## Getting Started
 
@@ -80,18 +84,69 @@ inject those public models when called by `dbt-core`.
 
 ## Advanced Features
 
-### Loading artifacts from remote sources
+### Configuring artifact sources
 
-`dbt-loom` supports automatically fetching manifest artifacts from a variety
-of remote sources.
+#### Object storage
 
-#### Using dbt Cloud as an artifact source
+`dbt-loom` supports loading static manifest data stored within object storage
+providers like S3, Azure Storage, and GCS. Note that these integrations use the
+standard python libraries for each service (`boto3`, `gcs`, `azure`), and as
+such their standard environment variables are supported.
 
-You can use dbt-loom to fetch model definitions from dbt Cloud by setting up a `dbt-cloud` manifest in your `dbt-loom` config, and setting the `DBT_CLOUD_API_TOKEN` environment variable in your execution environment.
+```yml
+manifests:
+  # AWS-Hosted Manifest objects
+  - name: aws_project
+    type: s3
+    config:
+      # The name of the bucket where your manifest is stored.
+      bucket_name: <YOUR S3 BUCKET NAME>
+
+      # The object name of your manifest file.
+      object_name: <YOUR OBJECT NAME>
+
+  # Google Cloud Storage
+  - name: gcs_project
+    type: gcs
+    config:
+      # The alphanumeric ID of the GCP project that contains your target bucket.
+      project_id: <YOUR GCP PROJECT ID>
+
+      # The name of the bucket where your manifest is stored.
+      bucket_name: <YOUR GCS BUCKET NAME>
+
+      # The object name of your manifest file.
+      object_name: <YOUR OBJECT NAME>
+
+      # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
+      credentials: <PATH TO YOUR SERVICE ACCOUNT JSON CREDENTIALS>
+
+  # Azure Storage
+  - name: azure_project
+    type: azure
+    config:
+      # The name of your Azure Storage account
+      account_name: <YOUR AZURE STORAGE ACCOUNT NAME>
+
+      # The name of your Azure Storage container
+      container_name: <YOUR AZURE STORAGE CONTAINER NAME>
+
+      # The object name of your manifest file.
+      object_name: <YOUR OBJECT NAME>
+
+      # Alternatively, Set the `AZURE_STORAGE_CONNECTION_STRING` environment
+      # variable to authenticate via a connection string.
+```
+
+#### `dbt-core` hosting providers
+
+`dbt-loom` supports calling the APIs for different `dbt-core` hosting providers
+to obtain manifest data, including dbt Cloud and Paradime. Each client requires
+specific configuration values to operate correctly.
 
 ```yaml
 manifests:
-  - name: project_name
+  - name: dbt_cloud_project
     type: dbt_cloud
     config:
       account_id: <YOUR DBT CLOUD ACCOUNT ID>
@@ -99,22 +154,15 @@ manifests:
       # Job ID pertains to the job that you'd like to fetch artifacts from.
       job_id: <REFERENCE JOB ID>
 
-      api_endpoint: <DBT CLOUD ENDPOINT>
       # dbt Cloud has multiple regions with different URLs. Update this to
       # your appropriate dbt cloud endpoint.
+      api_endpoint: <DBT CLOUD ENDPOINT>
 
-      step_id: <JOB STEP>
       # If your job generates multiple artifacts, you can set the step from
       # which to fetch artifacts. Defaults to the last step.
-```
+      step_id: <JOB STEP>
 
-#### Using Paradime as an artifact source
-
-You can use dbt-loom to fetch model definitions from Paradime by setting up a `paradime` manifest in your `dbt-loom` config with your Paradime API credentials.
-
-```yaml
-manifests:
-  - name: project_name
+  - name: paradime_project
     type: paradime
     config:
       # It is recommended to use environment variables to set your API credentials.
@@ -130,95 +178,33 @@ manifests:
       command_index: <YOUR PARADIME SCHEDULE COMMAND INDEX>
 ```
 
-#### Using an S3-compatible object store as an artifact source
+#### Data Warehouses
 
-You can use dbt-loom to fetch manifest files from S3-compatible object stores
-by setting up ab `s3` manifest in your `dbt-loom` config. Please note that this
-approach supports all standard boto3-compatible environment variables and authentication mechanisms. Please see the [boto3 documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#environment-variables) for more details.
+Lastly, uou can use dbt-loom to fetch manifest files from Snowflake Stage and
+from Databricks Volumes, DBFS, and Workspace locations by setting up a `snowflake` or `databricks` manifest in your `dbt-loom` config.
+
+> [!WARNING]
+> The `dbt-databricks` adapter or Python SDK is required to use the `databricks` manifest type
+
+> [!WARNING]
+> Please note that these only work for dbt-core versions 1.8.0 and newer.
 
 ```yaml
 manifests:
-  - name: project_name
-    type: s3
+
+manifests:
+  - name: databricks_project
+    type: databricks
     config:
-      bucket_name: <YOUR S3 BUCKET NAME>
-      # The name of the bucket where your manifest is stored.
+      path: <WORKSPACE, VOLUME, OR DBFS PATH TO MANIFEST FILE>
 
-      object_name: <YOUR OBJECT NAME>
-      # The object name of your manifest file.
-```
+      # The `databricks` type implements Client Unified Authentication (https://docs.databricks.com/aws/en/dev-tools/auth/unified-auth), supporting all environment variables and authentication mechanisms.
 
-#### Using GCS as an artifact source
-
-You can use dbt-loom to fetch manifest files from Google Cloud Storage by setting up a `gcs` manifest in your `dbt-loom` config.
-
-```yaml
-manifests:
-  - name: project_name
-    type: gcs
-    config:
-      project_id: <YOUR GCP PROJECT ID>
-      # The alphanumeric ID of the GCP project that contains your target bucket.
-
-      bucket_name: <YOUR GCS BUCKET NAME>
-      # The name of the bucket where your manifest is stored.
-
-      object_name: <YOUR OBJECT NAME>
-      # The object name of your manifest file.
-
-      credentials: <PATH TO YOUR SERVICE ACCOUNT JSON CREDENTIALS>
-      # The OAuth2 Credentials to use. If not passed, falls back to the default inferred from the environment.
-```
-
-#### Using Azure Storage as an artifact source
-
-You can use dbt-loom to fetch manifest files from Azure Storage
-by setting up an `azure` manifest in your `dbt-loom` config. The `azure` type implements
-the [DefaultAzureCredential](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python)
-class, supporting all environment variables and authentication mechanisms.
-Alternatively, set the `AZURE_STORAGE_CONNECTION_STRING` environment variable to
-authenticate via a connection string.
-
-```yaml
-manifests:
-  - name: project_name
-    type: azure
-    config:
-      account_name: <YOUR AZURE STORAGE ACCOUNT NAME> # The name of your Azure Storage account
-      container_name: <YOUR AZURE STORAGE CONTAINER NAME> # The name of your Azure Storage container
-      object_name: <YOUR OBJECT NAME> # The object name of your manifest file.
-```
-
-#### Using Snowflake Stage as an artifact source
-
-You can use dbt-loom to fetch manifest files from Snowflake Stage by setting up a `snowflake` manifest in your `dbt-loom` config. Please note that this only
-works for dbt-core versions 1.8.0 and newer.
-
-```yaml
-manifests:
-  - name: project_name
+  - name: snowflake_project
     type: snowflake
     config:
       stage: stage_name # Stage name, can include Database/Schema
       stage_path: path/to/dbt/manifest.json # Path to manifest file in the stage
-```
-
-#### Using Databricks as an artifact source
-
-> [!WARNING]  
-> The `dbt-databricks` adapter or Python SDK is required to use the `databricks` manifest type
-
-You can use dbt-loom to fetch manifest files from Databricks Volumes, DBFS, and Workspace locations by setting up a `databricks`
-manifest in your `dbt-loom` config. The `databricks` type implements 
-[Client Unified Authentication](https://docs.databricks.com/aws/en/dev-tools/auth/unified-auth), supporting all environment variables
-and authentication mechanisms.
-
-```yaml
-manifests:
-  - name: project_name
-    type: databricks
-    config:
-      path: <WORKSPACE, VOLUME, OR DBFS PATH TO MANIFEST FILE>
 ```
 
 ### Using environment variables
@@ -281,7 +267,7 @@ manifests:
     type: file
     config:
       path: ../revenue/target/manifest.json
-    optional: true  # If the manifest file is missing, do not raise an error
+    optional: true # If the manifest file is missing, do not raise an error
 ```
 
 ## Known Caveats
@@ -290,7 +276,8 @@ Cross-project dependencies are a relatively new development, and dbt-core plugin
 are still in beta. As such there are a number of caveats to be aware of when using
 this tool.
 
-1. dbt plugins are only supported in dbt-core version 1.6.0-b8 and newer. This means you must be using a dbt adapter
-   compatible with this version.
-2. `PluginNodeArgs` are not fully-realized dbt `ManifestNode`s, so documentation generated by `dbt docs generate` may
+1. dbt plugins are only supported in dbt-core version 1.6.0-b8 and newer. This
+   means you must be using a dbt adapter compatible with this version.
+2. `PluginNodeArgs` are not fully-realized dbt `ManifestNode`s, so
+   documentation generated by `dbt docs generate` may
    be sparse when viewing injected models.

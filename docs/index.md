@@ -7,16 +7,18 @@ flowchart LR
 
    subgraph TOP[Your Infrastructure]
     direction TB
-    dbt_runtime[dbt Core]
-    proprietary_plugin[Open Source Metadata Plugin]
+    dbt_runtime[dbt Core]:::background
+    proprietary_plugin[Open Source Metadata Plugin]:::background
 
-    files[Local and Remote Files]
-    object_storage[Object Storage]
-    discovery_api[dbt Cloud APIs]
+    files[Local and Remote Files]:::background
+    object_storage[Object Storage]:::background
+    data_warehouse_storage[Data Warehouse Storage]:::background
+    discovery_api[dbt-core Hosting Providers]:::background
 
     discovery_api --> proprietary_plugin
     files --> proprietary_plugin
     object_storage --> proprietary_plugin
+    data_warehouse_storage --> proprietary_plugin
     proprietary_plugin --> dbt_runtime
   end
 
@@ -27,12 +29,17 @@ dbt-loom currently supports obtaining model definitions from:
 
 - Local manifest files
 - Remote manifest files via http(s)
-- dbt Cloud
-- GCS
-- S3-compatible object storage services
-- Azure Storage
-- Snowflake stages
-- Databricks Volume, DBFS, and Workspace locations
+- `dbt-core` Hosting Providers
+  - dbt Cloud
+  - Datacoves
+  - Paradime
+- Object Storage
+  - GCS
+  - S3-compatible object storage services
+  - Azure Storage
+- Database Warehouse Storage
+  - Snowflake stages
+  - Databricks Volume, DBFS, and Workspace locations
 
 ## How does it work?
 
