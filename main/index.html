@@ -407,16 +407,18 @@
 
    subgraph TOP[Your Infrastructure]
     direction TB
-    dbt_runtime[dbt Core]
-    proprietary_plugin[Open Source Metadata Plugin]
+    dbt_runtime[dbt Core]:::background
+    proprietary_plugin[Open Source Metadata Plugin]:::background
 
-    files[Local and Remote Files]
-    object_storage[Object Storage]
-    discovery_api[dbt Cloud APIs]
+    files[Local and Remote Files]:::background
+    object_storage[Object Storage]:::background
+    data_warehouse_storage[Data Warehouse Storage]:::background
+    discovery_api[dbt-core Hosting Providers]:::background
 
     discovery_api --&gt; proprietary_plugin
     files --&gt; proprietary_plugin
     object_storage --&gt; proprietary_plugin
+    data_warehouse_storage --&gt; proprietary_plugin
     proprietary_plugin --&gt; dbt_runtime
   end
 
@@ -425,10 +427,15 @@
 <ul>
 <li>Local manifest files</li>
 <li>Remote manifest files via http(s)</li>
+<li><code>dbt-core</code> Hosting Providers</li>
 <li>dbt Cloud</li>
+<li>Datacoves</li>
+<li>Paradime</li>
+<li>Object Storage</li>
 <li>GCS</li>
 <li>S3-compatible object storage services</li>
 <li>Azure Storage</li>
+<li>Database Warehouse Storage</li>
 <li>Snowflake stages</li>
 <li>Databricks Volume, DBFS, and Workspace locations</li>
 </ul>
