@@ -22,6 +22,7 @@ from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig
 from dbt_loom.clients.paradime import ParadimeClient, ParadimeReferenceConfig
 from dbt_loom.clients.gcs import GCSClient, GCSReferenceConfig
 from dbt_loom.clients.s3 import S3Client, S3ReferenceConfig
+from dbt_loom.clients.dbx import DatabricksClient, DatabricksReferenceConfig
 from dbt_loom.config import (
     FileReferenceConfig,
     LoomConfigurationError,
@@ -37,7 +38,7 @@ class DependsOn(BaseModel):
     macros: List[str] = Field(default_factory=list)
 
 
-class ManifestNode(BaseModel):
+class ManifestNode(BaseModel, use_enum_values=True):
     """A basic ManifestNode that can be referenced across projects."""
 
     name: str
@@ -110,6 +111,7 @@ class ManifestLoader:
             ManifestReferenceType.azure: self.load_from_azure,
             ManifestReferenceType.snowflake: self.load_from_snowflake,
             ManifestReferenceType.paradime: self.load_from_paradime,
+            ManifestReferenceType.databricks: self.load_from_databricks
         }
 
     @staticmethod
@@ -236,8 +238,13 @@ class ManifestLoader:
             api_endpoint=config.api_endpoint,
             command_index=config.command_index,
         )
-
         return paradime_client.load_manifest()
+    
+    @staticmethod
+    def load_from_databricks(config: DatabricksReferenceConfig) -> Dict:
+        """Load a manifest dictionary from Databricks."""
+        databricks_client = DatabricksClient(path=config.path)
+        return databricks_client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Dict:
         """Load a manifest dictionary based on a ManifestReference input."""
@@ -248,8 +255,13 @@ class ManifestLoader:
                 "not have a valid type."
             )
 
-        manifest = self.loading_functions[manifest_reference.type](
-            manifest_reference.config
-        )
+        try:
+            manifest = self.loading_functions[manifest_reference.type](
+                manifest_reference.config
+            )
+        except LoomConfigurationError as e:
+            if getattr(manifest_reference, "optional", False):
+                return None
+            raise
 
         return manifest

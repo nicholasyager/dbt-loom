@@ -42,6 +42,8 @@ dbt-loom currently supports obtaining model definitions from:
 - GCS
 - S3-compatible object storage services
 - Azure Storage
+- Snowflake stages
+- Databricks Volume, DBFS, and Workspace locations
 
 ## Getting Started
 
@@ -70,8 +72,8 @@ By default, `dbt-loom` will look for `dbt_loom.config.yml` in your working direc
 ## How does it work?
 
 As of dbt-core 1.6.0-b8, there now exists a `dbtPlugin` class which defines functions that can
-be called by dbt-core's `PluginManger`. During different parts of the dbt-core lifecycle (such as graph linking and
-manifest writing), the `PluginManger` will be called and all plugins registered with the appropriate hook will be executed.
+be called by dbt-core's `PluginManager`. During different parts of the dbt-core lifecycle (such as graph linking and
+manifest writing), the `PluginManager` will be called and all plugins registered with the appropriate hook will be executed.
 
 dbt-loom implements a `get_nodes` hook, and uses a configuration file to parse manifests, identify public models, and
 inject those public models when called by `dbt-core`.
@@ -201,6 +203,24 @@ manifests:
       stage_path: path/to/dbt/manifest.json # Path to manifest file in the stage
 ```
 
+#### Using Databricks as an artifact source
+
+> [!WARNING]  
+> The `dbt-databricks` adapter or Python SDK is required to use the `databricks` manifest type
+
+You can use dbt-loom to fetch manifest files from Databricks Volumes, DBFS, and Workspace locations by setting up a `databricks`
+manifest in your `dbt-loom` config. The `databricks` type implements 
+[Client Unified Authentication](https://docs.databricks.com/aws/en/dev-tools/auth/unified-auth), supporting all environment variables
+and authentication mechanisms.
+
+```yaml
+manifests:
+  - name: project_name
+    type: databricks
+    config:
+      path: <WORKSPACE, VOLUME, OR DBFS PATH TO MANIFEST FILE>
+```
+
 ### Using environment variables
 
 You can easily incorporate your own environment variables into the config file. This allows for dynamic configuration values that can change based on the environment. To specify an environment variable in the `dbt-loom` config file, use one of the following formats:
@@ -249,6 +269,19 @@ manifests:
     excluded_packages:
       # Provide the string name of the package to exclude during injection.
       - dbt_project_evaluator
+```
+
+### Optional manifests
+
+If you want to allow a manifest reference to be missing (e.g. using dbt-loom for an upstream project to see dependencies), you can set `optional: true` for that manifest entry. When `optional` is true and the manifest file does not exist, dbt-loom will skip loading it without raising an error. If `optional` is false or omitted (the default), missing manifests will cause an error.
+
+```yaml
+manifests:
+  - name: revenue
+    type: file
+    config:
+      path: ../revenue/target/manifest.json
+    optional: true  # If the manifest file is missing, do not raise an error
 ```
 
 ## Known Caveats
