@@ -12,7 +12,7 @@ jobs:
       matrix:
         python-version: [3.11]
         poetry-version: [1.4.2]
-        dbt-version: [1.6.0, 1.7.0, 1.8.0, 1.9.0b2]
+        dbt-version: [1.6.0, 1.7.0, 1.8.0, 1.9.0b2, 1.10.1]
 
     runs-on: ubuntu-latest
 
