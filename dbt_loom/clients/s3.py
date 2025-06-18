@@ -2,10 +2,12 @@ import json
 from pathlib import Path
 from typing import Dict, Optional
 
-import boto3
+
 import gzip
 from io import BytesIO
 from pydantic import BaseModel
+
+from dbt_loom.logging import fire_event
 
 
 class S3ReferenceConfig(BaseModel):
@@ -26,6 +28,12 @@ class S3Client:
     def load_manifest(self) -> Dict:
         """Load the manifest.json file from an S3 bucket."""
 
+        try:
+            import boto3
+        except ImportError:
+            fire_event(msg="dbt-loom expected boto3 to be installed.")
+            raise
+
         client = boto3.client("s3")
 
         # TODO: Determine if I need to add args for SSE
@@ -44,7 +52,7 @@ class S3Client:
             if self.object_name.endswith(".gz"):
                 body = response["Body"].read()
                 with gzip.GzipFile(fileobj=BytesIO(body)) as gzipfile:
-                    content = gzipfile.read().decode('utf-8')
+                    content = gzipfile.read().decode("utf-8")
             else:
                 content = response["Body"].read().decode("utf-8")
         except Exception:

@@ -4,8 +4,9 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, Optional
 
-from google.cloud import storage
 from pydantic import BaseModel
+
+from dbt_loom.logging import fire_event
 
 
 class GCSReferenceConfig(BaseModel):
@@ -34,6 +35,13 @@ class GCSClient:
 
     def load_manifest(self) -> Dict:
         """Load a manifest json from a GCS bucket."""
+
+        try:
+            from google.cloud import storage
+        except ImportError:
+            fire_event(msg="dbt-loom expected google-cloud-storage to be installed.")
+            raise
+
         client = (
             storage.Client.from_service_account_json(
                 self.credentials, project=self.project_id
@@ -49,7 +57,7 @@ class GCSClient:
                 f"`{self.bucket_name}`."
             )
 
-        if self.object_name.endswith('.gz'):
+        if self.object_name.endswith(".gz"):
             compressed_manifest = blob.download_as_bytes()
             with gzip.GzipFile(fileobj=BytesIO(compressed_manifest)) as gzip_file:
                 manifest_json = gzip_file.read()
