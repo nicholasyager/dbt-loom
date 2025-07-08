@@ -64,6 +64,12 @@ class DatabricksClient:
                     downloaded_bytes = base64.b64decode(export_content)
                 except Exception:
                     downloaded_bytes = export_content if isinstance(export_content, bytes) else export_content.encode('utf-8')
+            # If it's a DBFS path, use w.dbfs.download
+            elif path_str.startswith("/dbfs/"):
+                # Remove the /dbfs prefix for w.dbfs.download as it expects paths relative to DBFS root
+                path_str = path_str[5:]
+                resp = w.dbfs.download(path_str)
+                downloaded_bytes = resp.read()
             # For other paths (e.g., Unity Catalog volumes or external locations), use files.download.
             else:
                 resp = w.files.download(path_str)
