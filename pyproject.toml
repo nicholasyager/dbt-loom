@@ -1,42 +1,53 @@
-[tool.poetry]
+[project]
 name = "dbt-loom"
 version = "0.9.1"
 description = "A dbt-core plugin to import public nodes in multi-project deployments."
-authors = ["Nicholas Yager <yager@nicholasyager.com>"]
+authors = [{ name = "Nicholas Yager", email = "yager@nicholasyager.com" }]
+requires-python = ">=3.9,<4.0"
 readme = "README.md"
-packages = [{ include = "dbt_loom" }]
+dependencies = [
+    "dbt-core>=1.6.0,<1.11.0",
+    "requests>=2.31.0,<3",
+    "google-cloud-storage>=2.13.0,<3",
+    "boto3>=1.28.84,<2",
+    "azure-storage-blob>=12.19.0,<13",
+    "azure-identity>=1.15.0,<2",
+    "types-pyyaml>=6.0.12.12,<7",
+    "types-networkx>=3.2.1.20240313,<4",
+    "paradime-io>=4.11.0,<5",
+]
+
+[project.optional-dependencies]
+snowflake = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.3.0,<0.12",
+    "pytest>=7.4.0,<8",
+    "isort>=5.12.0,<6",
+    "dbt-duckdb>=1.6.0,<1.10.0",
+    "duckdb>=0.8.0",
+    "pre-commit>=3.6.0,<4",
+    "mypy>=1.8.0,<2",
+]
+docs = ["mkdocs-material>=9.5.45,<10", "mike>=2.1.3,<3"]
 
 [tool.commitizen]
 version = "0.9.1"
 version_files = ["pyproject.toml:^version"]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<4.0"
-dbt-core = ">=1.6.0,<1.11.0"
-requests = "^2.31.0"
-google-cloud-storage = "^2.13.0"
-boto3 = "^1.28.84"
-azure-storage-blob = "^12.19.0"
-azure-identity = "^1.15.0"
-types-pyyaml = "^6.0.12.12"
-types-networkx = "^3.2.1.20240313"
-paradime-io = "^4.11.0"
+[tool.uv]
+default-groups = ["dev", "docs"]
 
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.3.0"
-pytest = "^7.4.0"
-isort = "^5.12.0"
-dbt-duckdb = ">=1.6.0,<1.10.0"
-duckdb = ">=0.8.0"
-pre-commit = "^3.6.0"
-mypy = "^1.8.0"
+[tool.hatch.build.targets.sdist]
+include = ["dbt_loom"]
 
-[tool.poetry.extras]
-snowflake = ["dbt-snowflake"]
+[tool.hatch.build.targets.wheel]
+include = ["dbt_loom"]
 
-[tool.poetry.group.docs.dependencies]
-mkdocs-material = "^9.5.45"
-mike = "^2.1.3"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 88
@@ -47,7 +58,3 @@ line_length = 88    # Comply with Ruff and Black
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
