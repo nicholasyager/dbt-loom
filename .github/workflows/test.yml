@@ -31,7 +31,7 @@ jobs:
 
       - name: Install dbt-core
         shell: bash
-        run: uv pip install dbt-core~=${{ matrix.dbt-version }} --prereleases allow
+        run: uv pip install dbt-core~=${{ matrix.dbt-version }} --prerelease allow
 
       - name: Test
         run: |
