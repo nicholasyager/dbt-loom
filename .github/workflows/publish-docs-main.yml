@@ -31,4 +31,4 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          uv run run mike deploy --push --message "Deployed by GitHub Actions" main
+          uv run mike deploy --push --message "Deployed by GitHub Actions" main
