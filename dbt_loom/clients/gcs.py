@@ -1,5 +1,6 @@
 import json
 import gzip
+import os
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, Optional
@@ -42,13 +43,31 @@ class GCSClient:
             fire_event(msg="dbt-loom expected google-cloud-storage to be installed.")
             raise
 
-        client = (
-            storage.Client.from_service_account_json(
-                self.credentials, project=self.project_id
-            )
-            if self.credentials
-            else storage.Client(project=self.project_id)
-        )
+        # Check if credentials parameter set. If file doesn't exist fall back to ADC. If that fails raise exception.
+        if self.credentials:
+            try:
+                client = storage.Client.from_service_account_json(
+                    json_credentials_path=self.credentials,
+                    project=self.project_id
+                )
+                fire_event(msg=f"Successfully created GCS client using service account from '{self.credentials}'.")
+            except FileNotFoundError:
+                fire_event(msg=f"Service account file '{self.credentials}' not found. Falling back to Application Default Credentials.")
+                try:
+                    client = storage.Client(project=self.project_id)
+                    fire_event(msg="Created CGS client using Application Default Credentials.")
+                except Exception as e:
+                    fire_event(msg=f"Failed to create GCS client using Application Default Credentials: {e}")
+                    raise
+        else:
+            try:
+                # Default fall-back to Application Default Credentials
+                client = storage.Client(project=self.project_id)
+                fire_event(msg="Created CGS client using Application Default Credentials.")
+            except Exception as e:
+                fire_event(msg=f"Failed to authenticate with Application Default Credentials: {e}")
+                raise
+
         bucket = client.get_bucket(self.bucket_name)
         blob = bucket.get_blob(self.object_name)
         if not blob:
