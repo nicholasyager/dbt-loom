@@ -50,15 +50,23 @@ class GCSClient:
                     json_credentials_path=self.credentials,
                     project=self.project_id
                 )
+                fire_event(msg=f"Successfully created GCS client using service account from '{self.credentials}'.")
             except FileNotFoundError:
+                fire_event(msg=f"Service account file '{self.credentials}' not found. Falling back to Application Default Credentials.")
                 try:
                     client = storage.Client(project=self.project_id)
+                    fire_event(msg="Created CGS client using Application Default Credentials.")
                 except Exception as e:
-                    fire_event(msg=f"Failed to load credentials: {e}")
+                    fire_event(msg=f"Failed to create GCS client using Application Default Credentials: {e}")
                     raise
         else:
-            # Default fall-back to Application Default Credentials
-            client = storage.Client(project=self.project_id)
+            try:
+                # Default fall-back to Application Default Credentials
+                client = storage.Client(project=self.project_id)
+                fire_event(msg="Created CGS client using Application Default Credentials.")
+            except Exception as e:
+                fire_event(msg=f"Failed to authenticate with Application Default Credentials: {e}")
+                raise
 
         bucket = client.get_bucket(self.bucket_name)
         blob = bucket.get_blob(self.object_name)
