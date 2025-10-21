@@ -194,6 +194,7 @@ class ManifestLoader:
             bucket_name=config.bucket_name,
             object_name=config.object_name,
             credentials=config.credentials,
+            impersonate_service_account=config.impersonate_service_account,
         )
 
         return gcs_client.load_manifest()

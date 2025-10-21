@@ -521,6 +521,7 @@ dependencies = [
     { name = "azure-storage-blob" },
     { name = "boto3" },
     { name = "dbt-core" },
+    { name = "google-auth" },
     { name = "google-cloud-storage" },
     { name = "paradime-io" },
     { name = "requests" },
@@ -528,7 +529,7 @@ dependencies = [
     { name = "types-pyyaml" },
 ]
 
-[package.dependency-groups]
+[package.dev-dependencies]
 dev = [
     { name = "dbt-duckdb" },
     { name = "duckdb" },
@@ -549,6 +550,7 @@ requires-dist = [
     { name = "azure-storage-blob", specifier = ">=12.19.0,<13" },
     { name = "boto3", specifier = ">=1.28.84,<2" },
     { name = "dbt-core", specifier = ">=1.6.0,<1.11.0" },
+    { name = "google-auth", specifier = ">=2.40.3" },
     { name = "google-cloud-storage", specifier = ">=2.13.0,<3" },
     { name = "paradime-io", specifier = ">=4.11.0,<5" },
     { name = "requests", specifier = ">=2.31.0,<3" },
@@ -556,7 +558,7 @@ requires-dist = [
     { name = "types-pyyaml", specifier = ">=6.0.12.12,<7" },
 ]
 
-[package.metadata.dependency-groups]
+[package.metadata.requires-dev]
 dev = [
     { name = "dbt-duckdb", specifier = ">=1.6.0,<1.10.0" },
     { name = "duckdb", specifier = ">=0.8.0" },
