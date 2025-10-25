@@ -1,6 +1,6 @@
 [project]
 name = "dbt-loom"
-version = "0.9.2"
+version = "0.9.3"
 description = "A dbt-core plugin to import public nodes in multi-project deployments."
 authors = [{ name = "Nicholas Yager", email = "yager@nicholasyager.com" }]
 requires-python = ">=3.9,<4.0"
@@ -34,7 +34,7 @@ dev = [
 docs = ["mkdocs-material>=9.5.45,<10", "mike>=2.1.3,<3"]
 
 [tool.commitizen]
-version = "0.9.2"
+version = "0.9.3"
 version_files = ["pyproject.toml:^version"]
 
 [tool.uv]
