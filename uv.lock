@@ -514,7 +514,7 @@ wheels = [
 
 [[package]]
 name = "dbt-loom"
-version = "0.9.1"
+version = "0.9.2"
 source = { editable = "." }
 dependencies = [
     { name = "azure-identity" },
@@ -529,7 +529,7 @@ dependencies = [
     { name = "types-pyyaml" },
 ]
 
-[package.dev-dependencies]
+[package.dependency-groups]
 dev = [
     { name = "dbt-duckdb" },
     { name = "duckdb" },
@@ -558,7 +558,7 @@ requires-dist = [
     { name = "types-pyyaml", specifier = ">=6.0.12.12,<7" },
 ]
 
-[package.metadata.requires-dev]
+[package.metadata.dependency-groups]
 dev = [
     { name = "dbt-duckdb", specifier = ">=1.6.0,<1.10.0" },
     { name = "duckdb", specifier = ">=0.8.0" },
