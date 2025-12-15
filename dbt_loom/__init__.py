@@ -33,17 +33,19 @@ class LoomModelNodeArgs(ModelNodeArgs):
 
     resource_type: NodeType = NodeType.Model
     group: Optional[str] = None
+    event_time: str = None
 
     def __init__(self, **kwargs):
         super().__init__(
             **{
                 key: value
                 for key, value in kwargs.items()
-                if key not in ("resource_type", "group")
+                if key not in ("resource_type", "group", "event_time", "config")
             }
         )
         self.resource_type = kwargs.get("resource_type", NodeType.Model)
         self.group = kwargs.get("group")
+        self.event_time = kwargs.get("config").get('event_time', None)
 
     @property
     def unique_id(self) -> str:
@@ -193,6 +195,7 @@ class dbtLoom(dbtPlugin):
         def outer_function(args: LoomModelNodeArgs) -> ModelNode:
             model = function(args)
             model.group = args.group
+            model.config.event_time = args.event_time
             return model
 
         return outer_function
