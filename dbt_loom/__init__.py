@@ -40,7 +40,7 @@ class LoomModelNodeArgs(ModelNodeArgs):
             **{
                 key: value
                 for key, value in kwargs.items()
-                if key not in ("resource_type", "group", "event_time", "config")
+                if key not in ("resource_type", "group", "config")
             }
         )
         self.resource_type = kwargs.get("resource_type", NodeType.Model)
