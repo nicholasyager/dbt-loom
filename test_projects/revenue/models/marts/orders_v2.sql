@@ -1,7 +1,8 @@
 {{
     config(
         materialized = 'incremental',
-        unique_key = 'order_id'
+        unique_key = 'order_id',
+        event_time = 'ordered_at_date'
     )
 }}
 
@@ -136,10 +137,10 @@ joined as (
 final as (
 
     select
-
         *,
         count_food_items > 0 as is_food_order,
-        count_drink_items > 0 as is_drink_order
+        count_drink_items > 0 as is_drink_order,
+        date(ordered_at) as ordered_at_date
 
     from joined
 
