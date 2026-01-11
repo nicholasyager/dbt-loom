@@ -37,4 +37,4 @@ jobs:
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
         run: |
-          uv publish --skip-existing
+          uv publish --check-url https://pypi.org/simple/dbt-loom/
