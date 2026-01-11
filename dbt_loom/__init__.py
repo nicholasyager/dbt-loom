@@ -33,7 +33,7 @@ class LoomModelNodeArgs(ModelNodeArgs):
 
     resource_type: NodeType = NodeType.Model
     group: Optional[str] = None
-    event_time: str = None
+    event_time: Optional[str] = None
 
     def __init__(self, **kwargs):
         super().__init__(
@@ -45,7 +45,7 @@ class LoomModelNodeArgs(ModelNodeArgs):
         )
         self.resource_type = kwargs.get("resource_type", NodeType.Model)
         self.group = kwargs.get("group")
-        self.event_time = kwargs.get("config").get('event_time', None)
+        self.event_time = kwargs.get("config", {}).get("event_time", None)
 
     @property
     def unique_id(self) -> str:
@@ -118,7 +118,7 @@ class dbtLoom(dbtPlugin):
     def __init__(self, project_name: str):
         # Log the version of dbt-loom being initialized
         fire_event(
-            msg=f'Initializing dbt-loom={importlib.metadata.version("dbt-loom")}'
+            msg=f"Initializing dbt-loom={importlib.metadata.version('dbt-loom')}"
         )
 
         configuration_path = Path(
@@ -239,9 +239,7 @@ class dbtLoom(dbtPlugin):
     def read_config(self, path: Path) -> Optional[dbtLoomConfig]:
         """Read the dbt-loom configuration file."""
         if not path.exists():
-            fire_event(
-                msg=f"dbt-loom: Config file `{path}` does not exist"
-            )
+            fire_event(msg=f"dbt-loom: Config file `{path}` does not exist")
             return None
 
         with open(path) as file:

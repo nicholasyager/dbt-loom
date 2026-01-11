@@ -112,7 +112,7 @@ class ManifestLoader:
             ManifestReferenceType.azure: self.load_from_azure,
             ManifestReferenceType.snowflake: self.load_from_snowflake,
             ManifestReferenceType.paradime: self.load_from_paradime,
-            ManifestReferenceType.databricks: self.load_from_databricks
+            ManifestReferenceType.databricks: self.load_from_databricks,
         }
 
     @staticmethod
@@ -241,14 +241,14 @@ class ManifestLoader:
             command_index=config.command_index,
         )
         return paradime_client.load_manifest()
-    
+
     @staticmethod
     def load_from_databricks(config: DatabricksReferenceConfig) -> Dict:
         """Load a manifest dictionary from Databricks."""
         databricks_client = DatabricksClient(path=config.path)
         return databricks_client.load_manifest()
 
-    def load(self, manifest_reference: ManifestReference) -> Dict:
+    def load(self, manifest_reference: ManifestReference) -> Optional[Dict]:
         """Load a manifest dictionary based on a ManifestReference input."""
 
         if manifest_reference.type not in self.loading_functions:
@@ -264,6 +264,6 @@ class ManifestLoader:
         except LoomConfigurationError as e:
             if getattr(manifest_reference, "optional", False):
                 return None
-            raise
+            raise e
 
         return manifest
