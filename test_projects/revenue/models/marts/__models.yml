@@ -50,11 +50,16 @@ models:
         description: A boolean indicating if this order included any food items.
       - name: is_drink_order
         description: A boolean indicating if this order included any drink items.
+      - name: ordered_at_date
+        description: The date at which the order was placed
 
     latest_version: 2
     versions:
       - v: 1
         deprecation_date: "2024-01-01"
+        columns:
+          - include: all
+            exclude: [ordered_at_date]
 
       - v: 2
         columns:
