@@ -65,3 +65,19 @@ in the `dbt_loom.config.yml` file.
 enable_telemetry: true
 manifests: ...
 ```
+
+## Alias Database Names
+
+In some circumstances, you might need to reference an aliased database name in
+the downstream project that differs from the originating database name in the
+upstream project. For example, in Microsoft Fabric cross-workspace queries can
+only be made using OneLake shortcuts rather than having direct query access to
+the upstream database. The database name can be aliased using the `database_alias`
+property in the `dbt_loom.config.yml` file.
+
+```yaml
+database_alias:
+  original_database_name1: alias_database_name1
+  original_database_name2: alias_database_name2
+manifests: ...
+```

@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import Path
 import re
-from typing import List, Union
+from typing import Dict, List, Union
 from urllib.parse import ParseResult, urlparse
 
 from pydantic import BaseModel, Field, validator
@@ -65,6 +65,7 @@ class ManifestReference(BaseModel):
         DatabricksReferenceConfig,
     ]
     excluded_packages: List[str] = Field(default_factory=list)
+    database_alias: Dict[str, str] = Field(default_factory=dict)
     optional: bool = False
 
 

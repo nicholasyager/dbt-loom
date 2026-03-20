@@ -86,6 +86,26 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
     return output
 
 
+def apply_database_alias(
+    nodes: Dict[str, ManifestNode],
+    database_alias: Dict[str, str],
+) -> Dict[str, ManifestNode]:
+    """Apply database name aliases to ManifestNodes."""
+    if not database_alias:
+        return nodes
+
+    for node in nodes.values():
+        if node.database and node.database in database_alias:
+            original_db = node.database
+            alias_db = database_alias[original_db]
+            node.database = alias_db
+
+            if node.relation_name:
+                node.relation_name = node.relation_name.replace(original_db, alias_db, 1)
+
+    return nodes
+
+
 def convert_model_nodes_to_model_node_args(
     selected_nodes: Dict[str, ManifestNode],
 ) -> Dict[str, LoomModelNodeArgs]:
@@ -284,6 +304,15 @@ class dbtLoom(dbtPlugin):
             self.manifests[manifest_name] = manifest
 
             selected_nodes = identify_node_subgraph(manifest)
+
+            if manifest_reference.database_alias:
+                fire_event(
+                    msg=f"dbt-loom: Applying database overrides for `{manifest_reference.name}`: "
+                    f"{manifest_reference.database_alias}"
+                )
+                selected_nodes = apply_database_alias(
+                    selected_nodes, manifest_reference.database_alias
+                )
 
             # Remove nodes from excluded packages.
             filtered_nodes = {
