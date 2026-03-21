@@ -76,8 +76,12 @@ the upstream database. The database name can be aliased using the `database_alia
 property in the `dbt_loom.config.yml` file.
 
 ```yaml
-database_alias:
-  original_database_name1: alias_database_name1
-  original_database_name2: alias_database_name2
-manifests: ...
+manifests:
+  - name: revenue
+    type: file
+    config:
+      path: ../revenue/target/manifest.json
+      database_alias:
+        upstream_database_1: downstream_database_1
+        upstream_database_2: downstream_database_2
 ```
