@@ -81,7 +81,7 @@ manifests:
     type: file
     config:
       path: ../revenue/target/manifest.json
-      database_alias:
-        upstream_database_1: downstream_database_1
-        upstream_database_2: downstream_database_2
+    database_alias:
+      upstream_database_1: downstream_database_1
+      upstream_database_2: downstream_database_2
 ```
