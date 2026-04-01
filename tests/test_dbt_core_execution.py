@@ -1,6 +1,8 @@
 import os
+import shutil
 from pathlib import Path
 
+import yaml
 import dbt
 from dbt.cli.main import dbtRunner, dbtRunnerResult
 
@@ -163,6 +165,7 @@ def test_dbt_core_telemetry_blocking():
 
     os.chdir(starting_path)
 
+
 def test_dbt_loom_injects_microbatch_event_time():
     """Verify that dbt-loom injects the 'event_time' property to allow proper microbatch configuration"""
     import shutil
@@ -204,3 +207,5 @@ def test_dbt_loom_injects_microbatch_event_time():
         assert "has no 'ref' or 'source' input with an 'event_time' configuration" not in log_contents
 
     os.chdir(starting_path)
+
+

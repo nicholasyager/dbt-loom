@@ -65,6 +65,7 @@ class ManifestReference(BaseModel):
         DatabricksReferenceConfig,
     ]
     excluded_packages: List[str] = Field(default_factory=list)
+    node_transformers: List[str] = Field(default_factory=list)
     optional: bool = False
 
 
