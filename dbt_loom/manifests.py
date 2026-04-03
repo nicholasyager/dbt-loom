@@ -18,6 +18,10 @@ except ModuleNotFoundError:
     from dbt.node_types import NodeType  # type: ignore
 
 from dbt_loom.clients.az_blob import AzureClient, AzureReferenceConfig
+from dbt_loom.clients.dagster_cloud import (
+    DagsterCloudClient,
+    DagsterCloudReferenceConfig,
+)
 from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig
 from dbt_loom.clients.paradime import ParadimeClient, ParadimeReferenceConfig
 from dbt_loom.clients.gcs import GCSClient, GCSReferenceConfig
@@ -113,6 +117,7 @@ class ManifestLoader:
             ManifestReferenceType.snowflake: self.load_from_snowflake,
             ManifestReferenceType.paradime: self.load_from_paradime,
             ManifestReferenceType.databricks: self.load_from_databricks,
+            ManifestReferenceType.dagster_cloud: self.load_from_dagster_cloud,
         }
 
     @staticmethod
@@ -247,6 +252,15 @@ class ManifestLoader:
         """Load a manifest dictionary from Databricks."""
         databricks_client = DatabricksClient(path=config.path)
         return databricks_client.load_manifest()
+
+    @staticmethod
+    def load_from_dagster_cloud(config: DagsterCloudReferenceConfig) -> Dict:
+        """Load a manifest dictionary from Dagster Cloud."""
+        client = DagsterCloudClient(
+            organization=config.organization,
+            key=config.key,
+        )
+        return client.load_manifest()
 
     def load(self, manifest_reference: ManifestReference) -> Optional[Dict]:
         """Load a manifest dictionary based on a ManifestReference input."""

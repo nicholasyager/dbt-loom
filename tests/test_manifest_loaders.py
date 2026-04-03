@@ -5,12 +5,18 @@ from typing import Dict, Generator, Tuple
 from urllib.parse import urlparse
 
 import pytest
+import responses
 from dbt_loom.config import (
     FileReferenceConfig,
     ManifestReference,
     ManifestReferenceType,
     LoomConfigurationError,
 )
+from dbt_loom.clients.dagster_cloud import (
+    DagsterCloudClient,
+    DagsterCloudReferenceConfig,
+)
+from dagster_shared.plus.config import DagsterPlusCliConfig
 from dbt_loom.clients.dbx import DatabricksReferenceConfig
 from dbt_loom.manifests import ManifestLoader, UnknownManifestPathType
 
@@ -152,3 +158,98 @@ def test_manifest_reference_resolves_file_config():
         config={"path": "manifest.json"},
     )
     assert isinstance(ref.config, FileReferenceConfig)
+
+
+class TestDagsterCloudManifestLoader:
+    """Tests for the Dagster Cloud manifest loader."""
+
+    @responses.activate
+    def test_load_manifest(self):
+        """Test that DagsterCloudClient can load a manifest via the two-step API flow."""
+        manifest_content = {"nodes": {"model.my_project.my_model": {}}}
+        presigned_url = "https://storage.example.com/presigned/manifest.json"
+
+        responses.post(
+            "https://dagster.cloud/my-org/gen_artifact_get",
+            json={"url": presigned_url},
+            status=200,
+        )
+        responses.get(
+            presigned_url,
+            json=manifest_content,
+            status=200,
+        )
+
+        client = DagsterCloudClient(
+            organization="my-org",
+            key="dagster/manifest.json",
+            token="test-token",
+        )
+        result = client.load_manifest()
+        assert result == manifest_content
+
+    def test_missing_token(self, monkeypatch):
+        """Test that DagsterCloudClient raises when no token is available."""
+        monkeypatch.delenv("DAGSTER_CLOUD_API_TOKEN", raising=False)
+        monkeypatch.setattr(DagsterPlusCliConfig, "exists", staticmethod(lambda: False))
+
+        with pytest.raises(Exception, match="dg plus login"):
+            DagsterCloudClient(
+                organization="my-org",
+                key="dagster/manifest.json",
+            )
+
+    def test_token_from_env_var(self, monkeypatch):
+        """Test that DagsterCloudClient falls back to the DAGSTER_CLOUD_API_TOKEN env var."""
+        monkeypatch.setenv("DAGSTER_CLOUD_API_TOKEN", "env-token")
+        monkeypatch.setattr(DagsterPlusCliConfig, "exists", staticmethod(lambda: False))
+
+        client = DagsterCloudClient(
+            organization="my-org",
+            key="dagster/manifest.json",
+        )
+        assert client._DagsterCloudClient__token == "env-token"
+
+    def test_token_from_cli_config(self, monkeypatch):
+        """Test that DagsterCloudClient falls back to DagsterPlusCliConfig."""
+        monkeypatch.delenv("DAGSTER_CLOUD_API_TOKEN", raising=False)
+        monkeypatch.setattr(DagsterPlusCliConfig, "exists", staticmethod(lambda: True))
+        monkeypatch.setattr(
+            DagsterPlusCliConfig,
+            "get",
+            classmethod(lambda cls: DagsterPlusCliConfig(user_token="cli-token")),
+        )
+
+        client = DagsterCloudClient(
+            organization="my-org",
+            key="dagster/manifest.json",
+        )
+        assert client._DagsterCloudClient__token == "cli-token"
+
+    def test_explicit_token_takes_precedence(self, monkeypatch):
+        """Test that an explicit token takes precedence over env var and CLI config."""
+        monkeypatch.setenv("DAGSTER_CLOUD_API_TOKEN", "env-token")
+        monkeypatch.setattr(DagsterPlusCliConfig, "exists", staticmethod(lambda: True))
+        monkeypatch.setattr(
+            DagsterPlusCliConfig,
+            "get",
+            classmethod(lambda cls: DagsterPlusCliConfig(user_token="cli-token")),
+        )
+
+        client = DagsterCloudClient(
+            organization="my-org",
+            key="dagster/manifest.json",
+            token="explicit-token",
+        )
+        assert client._DagsterCloudClient__token == "explicit-token"
+
+    def test_config_resolution(self):
+        """Verify that type=dagster_cloud produces DagsterCloudReferenceConfig."""
+        ref = ManifestReference(
+            name="test_dagster",
+            type=ManifestReferenceType.dagster_cloud,
+            config={"organization": "my-org", "key": "dagster/manifest.json"},
+        )
+        assert isinstance(ref.config, DagsterCloudReferenceConfig)
+        assert ref.config.organization == "my-org"
+        assert ref.config.key == "dagster/manifest.json"

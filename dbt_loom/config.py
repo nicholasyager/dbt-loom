@@ -12,6 +12,7 @@ from dbt_loom.clients.gcs import GCSReferenceConfig
 from dbt_loom.clients.paradime import ParadimeReferenceConfig
 from dbt_loom.clients.s3 import S3ReferenceConfig
 from dbt_loom.clients.snowflake_stage import SnowflakeReferenceConfig
+from dbt_loom.clients.dagster_cloud import DagsterCloudReferenceConfig
 from dbt_loom.clients.dbx import DatabricksReferenceConfig
 
 
@@ -26,6 +27,7 @@ class ManifestReferenceType(str, Enum):
     azure = "azure"
     snowflake = "snowflake"
     databricks = "databricks"
+    dagster_cloud = "dagster_cloud"
 
 
 class FileReferenceConfig(BaseModel):
@@ -58,6 +60,7 @@ _TYPE_TO_CONFIG = {
     ManifestReferenceType.azure: AzureReferenceConfig,
     ManifestReferenceType.snowflake: SnowflakeReferenceConfig,
     ManifestReferenceType.databricks: DatabricksReferenceConfig,
+    ManifestReferenceType.dagster_cloud: DagsterCloudReferenceConfig,
 }
 
 
@@ -75,6 +78,7 @@ class ManifestReference(BaseModel):
         AzureReferenceConfig,
         SnowflakeReferenceConfig,
         DatabricksReferenceConfig,
+        DagsterCloudReferenceConfig,
     ]
     excluded_packages: List[str] = Field(default_factory=list)
     optional: bool = False
