@@ -11,7 +11,7 @@ import dbt.exceptions
 starting_path = os.getcwd()
 
 
-def test_dbt_core_runs_loom_plugin():
+def test_dbt_core_runs_loom_plugin(monkeypatch):
     """Verify that dbt-core runs the dbt-loom plugin and nodes are injected."""
 
     runner = dbtRunner()
@@ -19,12 +19,14 @@ def test_dbt_core_runs_loom_plugin():
     # Compile the revenue project
 
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     runner.invoke(["compile"])
 
     # Run `build` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
@@ -56,13 +58,14 @@ def test_dbt_core_runs_loom_plugin():
     ), "The child project is missing expected nodes. Check that injection still works."
 
 
-def test_dbt_loom_injects_dependencies():
+def test_dbt_loom_injects_dependencies(monkeypatch):
     """Verify that dbt-core runs the dbt-loom plugin and that it flags access violations."""
 
     runner = dbtRunner()
 
     # Compile the revenue project
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output = runner.invoke(["compile"])
@@ -87,6 +90,7 @@ def test_dbt_loom_injects_dependencies():
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
@@ -99,13 +103,14 @@ def test_dbt_loom_injects_dependencies():
     assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
 
 
-def test_dbt_loom_injects_groups():
+def test_dbt_loom_injects_groups(monkeypatch):
     """Verify that dbt-core runs the dbt-loom plugin and that it flags group violations."""
 
     runner = dbtRunner()
 
     # Compile the revenue project
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output = runner.invoke(["compile"])
@@ -130,6 +135,7 @@ def test_dbt_loom_injects_groups():
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
@@ -142,7 +148,7 @@ def test_dbt_loom_injects_groups():
     assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
 
 
-def test_dbt_core_telemetry_blocking():
+def test_dbt_core_telemetry_blocking(monkeypatch):
     """Verify that dbt-loom prevents telemetry about itself from being sent."""
     import shutil
 
@@ -151,6 +157,7 @@ def test_dbt_core_telemetry_blocking():
     # Compile the revenue project
 
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     shutil.rmtree("logs")
@@ -163,13 +170,14 @@ def test_dbt_core_telemetry_blocking():
 
     os.chdir(starting_path)
 
-def test_dbt_loom_injects_microbatch_event_time():
+def test_dbt_loom_injects_microbatch_event_time(monkeypatch):
     """Verify that dbt-loom injects the 'event_time' property to allow proper microbatch configuration"""
     import shutil
 
     runner = dbtRunner()
 
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     shutil.rmtree("logs")
     runner.invoke(["clean"])
     runner.invoke(["deps"])
@@ -177,6 +185,7 @@ def test_dbt_loom_injects_microbatch_event_time():
     runner.invoke(["build"])
 
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     shutil.rmtree("logs")
