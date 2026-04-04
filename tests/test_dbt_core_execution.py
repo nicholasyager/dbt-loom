@@ -3,7 +3,7 @@ from pathlib import Path
 
 import dbt
 from dbt.cli.main import dbtRunner, dbtRunnerResult
-
+from tests.helpers import dbt_version
 
 import dbt.exceptions
 
