@@ -65,7 +65,7 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
 
     # We're going to temporarily allow all nodes here.
     for unique_id in manifest["nodes"].keys():
-        if unique_id.split(".")[0] in (NodeType.Test.value, NodeType.Macro.value):
+        if unique_id.split(".")[0] in (NodeType.Test.value, NodeType.Macro.value, "function"):
             continue
 
         node = manifest.get("nodes", {}).get(unique_id)
