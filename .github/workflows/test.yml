@@ -15,6 +15,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+      UV_LINK_MODE: copy
+
     steps:
       - uses: actions/checkout@v2
 
