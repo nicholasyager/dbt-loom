@@ -60,11 +60,10 @@ class DagsterCloudClient:
         1. POST to gen_artifact_get with the artifact key to get a presigned URL.
         2. GET the presigned URL to fetch the manifest JSON.
         """
-        url = f"{self.base_url}/{self.organization}/gen_artifact_get"
-        fire_event(msg=f"Requesting artifact URL from {url}")
+        fire_event(msg=f"Requesting manifest from Dagster Cloud ({self.base_url}/{self.organization})")
 
         response = requests.post(
-            url,
+            f"{self.base_url}/{self.organization}/gen_artifact_get",
             json={"key": self.key},
             headers={"Dagster-Cloud-Api-Token": self.__token},
         )
