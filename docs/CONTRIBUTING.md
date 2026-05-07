@@ -57,6 +57,16 @@ tests with:
 pytest tests/
 ```
 
+To run the tests againt all supported dbt-core and python versions, you can run the tests using [act](https://github.com/nektos/act) CLI:
+```bash
+act pull_request \
+  -W .github/workflows/test.yml \
+  --container-architecture linux/amd64 \
+  --env DOCKER_HOST=unix:///var/run/docker.sock \
+  --env TC_HOST=host.docker.internal \
+  --container-options "--add-host=host.docker.internal:host-gateway"
+```
+
 ### Documentation
 
 Contributions to documentation are always welcome. If you see something that can be improved or needs clarification, feel free to make changes.

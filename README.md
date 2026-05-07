@@ -22,11 +22,13 @@ flowchart LR
     object_storage[Object Storage]:::background
     data_warehouse_storage[Data Warehouse Storage]:::background
     discovery_api[dbt-core Hosting Providers]:::background
+    orchestration[Orchestration Platforms]:::background
 
     discovery_api --> proprietary_plugin
     files --> proprietary_plugin
     object_storage --> proprietary_plugin
     data_warehouse_storage --> proprietary_plugin
+    orchestration --> proprietary_plugin
     proprietary_plugin --> dbt_runtime
   end
 
@@ -48,6 +50,8 @@ dbt-loom currently supports obtaining model definitions from:
 - Database Warehouse Storage
   - Snowflake stages
   - Databricks Volume, DBFS, and Workspace locations
+- Orchestration Platforms
+  - Dagster Cloud
 
 ## Getting Started
 
@@ -206,6 +210,52 @@ manifests:
       stage: stage_name # Stage name, can include Database/Schema
       stage_path: path/to/dbt/manifest.json # Path to manifest file in the stage
 ```
+
+#### Orchestration Platforms
+
+`dbt-loom` supports fetching manifest artifacts from orchestration platforms
+that run dbt and store build artifacts.
+
+```yaml
+manifests:
+  - name: dagster_cloud_project
+    type: dagster_cloud
+    config:
+      # Your Dagster Cloud organization name.
+      organization: <YOUR DAGSTER CLOUD ORGANIZATION>
+
+      # The artifact key for your manifest file in Dagster Cloud.
+      key: <YOUR ARTIFACT KEY>
+```
+
+The `key` value is derived from the state path of your packaged dbt project in
+the production deployment. For example, given the following Dagster dbt component
+config:
+
+```yaml
+attributes:
+  project:
+    project_dir: "{{ project_root }}/dbt"
+    packaged_project_dir: "{{ project_root }}/src/dbt-project"
+    state_path: state
+```
+
+Where `{{ project_root }}` resolves to your deployment's project root (commonly
+`/opt/dagster/app` for Docker deployments), the artifact key would be:
+
+```
+/opt/dagster/app/src/dbt-project/state/manifest.json
+```
+
+Authentication is resolved in the following order:
+1. The `DAGSTER_CLOUD_API_TOKEN` environment variable
+2. The `dg` CLI config (set up via `dg plus login`)
+
+> [!NOTE]
+> Your Dagster production deployment must upload the dbt `manifest.json` as an
+> artifact to Dagster Cloud for dbt-loom to fetch it. See the
+> [Dagster dbt integration reference](https://docs.dagster.io/integrations/libraries/dbt/reference#leveraging-dbt-defer-with-branch-deployments)
+> for details on managing dbt state in Dagster deployments.
 
 ### Using environment variables
 

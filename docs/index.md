@@ -14,11 +14,13 @@ flowchart LR
     object_storage[Object Storage]:::background
     data_warehouse_storage[Data Warehouse Storage]:::background
     discovery_api[dbt-core Hosting Providers]:::background
+    orchestration[Orchestration Platforms]:::background
 
     discovery_api --> proprietary_plugin
     files --> proprietary_plugin
     object_storage --> proprietary_plugin
     data_warehouse_storage --> proprietary_plugin
+    orchestration --> proprietary_plugin
     proprietary_plugin --> dbt_runtime
   end
 
@@ -40,6 +42,8 @@ dbt-loom currently supports obtaining model definitions from:
 - Database Warehouse Storage
   - Snowflake stages
   - Databricks Volume, DBFS, and Workspace locations
+- Orchestration Platforms
+  - Dagster Cloud
 
 ## How does it work?
 

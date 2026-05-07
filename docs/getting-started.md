@@ -158,3 +158,47 @@ manifests:
     config:
       path: <WORKSPACE, VOLUME, OR DBFS PATH TO MANIFEST FILE>
 ```
+
+## Using Dagster Cloud as an artifact source
+
+You can use dbt-loom to fetch manifest artifacts from Dagster Cloud by setting up
+a `dagster_cloud` manifest in your `dbt-loom` config. Authentication is resolved
+automatically from the `DAGSTER_CLOUD_API_TOKEN` environment variable or the
+`dg` CLI config (set up via `dg plus login`).
+
+```yaml
+manifests:
+  - name: project_name
+    type: dagster_cloud
+    config:
+      organization: <YOUR DAGSTER CLOUD ORGANIZATION>
+      # Your Dagster Cloud organization name.
+
+      key: <YOUR ARTIFACT KEY>
+      # The artifact key for your manifest file in Dagster Cloud.
+```
+
+The `key` value is derived from the state path of your packaged dbt project in
+the production deployment. For example, given the following Dagster dbt component
+config:
+
+```yaml
+attributes:
+  project:
+    project_dir: "{{ project_root }}/dbt"
+    packaged_project_dir: "{{ project_root }}/src/dbt-project"
+    state_path: state
+```
+
+Where `{{ project_root }}` resolves to your deployment's project root (commonly
+`/opt/dagster/app` for Docker deployments), the artifact key would be:
+
+```
+/opt/dagster/app/src/dbt-project/state/manifest.json
+```
+
+> [!NOTE]
+> Your Dagster production deployment must upload the dbt `manifest.json` as an
+> artifact to Dagster Cloud for dbt-loom to fetch it. See the
+> [Dagster dbt integration reference](https://docs.dagster.io/integrations/libraries/dbt/reference#leveraging-dbt-defer-with-branch-deployments)
+> for details on managing dbt state in Dagster deployments.
