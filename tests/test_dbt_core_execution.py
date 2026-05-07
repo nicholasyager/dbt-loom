@@ -1,6 +1,8 @@
 import os
+import shutil
 from pathlib import Path
 
+import yaml
 import dbt
 from dbt.cli.main import dbtRunner, dbtRunnerResult
 
@@ -163,6 +165,7 @@ def test_dbt_core_telemetry_blocking():
 
     os.chdir(starting_path)
 
+
 def test_dbt_loom_injects_microbatch_event_time():
     """Verify that dbt-loom injects the 'event_time' property to allow proper microbatch configuration"""
     import shutil
@@ -204,3 +207,40 @@ def test_dbt_loom_injects_microbatch_event_time():
         assert "has no 'ref' or 'source' input with an 'event_time' configuration" not in log_contents
 
     os.chdir(starting_path)
+
+
+def test_dbt_loom_database_alias():
+    """Verify that database_alias remaps database names on injected nodes."""
+
+    runner = dbtRunner()
+
+    # Compile the revenue project first
+    os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
+    runner.invoke(["deps"])
+    runner.invoke(["compile"])
+
+    # Temporarily modify the customer_success config to include a database alias
+    config_path = Path(f"{starting_path}/test_projects/customer_success/dbt_loom.config.yml")
+    original_config = config_path.read_text()
+
+    alias_config = yaml.safe_load(original_config)
+    alias_config["manifests"][0]["database_alias"] = {"database": "aliased_db"}
+
+    try:
+        config_path.write_text(yaml.dump(alias_config))
+
+        os.chdir(f"{starting_path}/test_projects/customer_success")
+        runner.invoke(["clean"])
+        runner.invoke(["deps"])
+        shutil.rmtree("logs", ignore_errors=True)
+        output: dbtRunnerResult = runner.invoke(["compile"])
+
+        with open("logs/dbt.log") as log_file:
+            log_contents = log_file.read()
+
+        assert "Applying database overrides" in log_contents
+        assert "aliased_db" in log_contents
+    finally:
+        config_path.write_text(original_config)
+        os.chdir(starting_path)
