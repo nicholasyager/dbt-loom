@@ -3,7 +3,7 @@ name = "dbt-loom"
 version = "0.9.4"
 description = "A dbt-core plugin to import public nodes in multi-project deployments."
 authors = [{ name = "Nicholas Yager", email = "yager@nicholasyager.com" }]
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.10,<4.0"
 readme = "README.md"
 dependencies = [
     "dbt-core>=1.6.0,<1.12.0",
@@ -31,6 +31,8 @@ dev = [
     "pre-commit>=3.6.0,<4",
     "mypy>=1.8.0,<2",
     "types-requests>=2.31.0.6",
+    "testcontainers>=4.14.2",
+    "dbt-postgres>=1.10.0",
 ]
 docs = ["mkdocs-material>=9.5.45,<10", "mike>=2.1.3,<3"]
 

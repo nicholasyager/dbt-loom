@@ -3,7 +3,7 @@ from pathlib import Path
 
 import dbt
 from dbt.cli.main import dbtRunner, dbtRunnerResult
-
+from tests.helpers import dbt_version
 
 import dbt.exceptions
 
@@ -11,7 +11,7 @@ import dbt.exceptions
 starting_path = os.getcwd()
 
 
-def test_dbt_core_runs_loom_plugin():
+def test_dbt_core_runs_loom_plugin(monkeypatch):
     """Verify that dbt-core runs the dbt-loom plugin and nodes are injected."""
 
     runner = dbtRunner()
@@ -19,12 +19,14 @@ def test_dbt_core_runs_loom_plugin():
     # Compile the revenue project
 
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     runner.invoke(["compile"])
 
     # Run `build` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
@@ -56,13 +58,14 @@ def test_dbt_core_runs_loom_plugin():
     ), "The child project is missing expected nodes. Check that injection still works."
 
 
-def test_dbt_loom_injects_dependencies():
+def test_dbt_loom_injects_dependencies(monkeypatch):
     """Verify that dbt-core runs the dbt-loom plugin and that it flags access violations."""
 
     runner = dbtRunner()
 
     # Compile the revenue project
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output = runner.invoke(["compile"])
@@ -87,6 +90,7 @@ def test_dbt_loom_injects_dependencies():
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
@@ -99,13 +103,14 @@ def test_dbt_loom_injects_dependencies():
     assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
 
 
-def test_dbt_loom_injects_groups():
+def test_dbt_loom_injects_groups(monkeypatch):
     """Verify that dbt-core runs the dbt-loom plugin and that it flags group violations."""
 
     runner = dbtRunner()
 
     # Compile the revenue project
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output = runner.invoke(["compile"])
@@ -130,6 +135,7 @@ def test_dbt_loom_injects_groups():
 
     # Run `ls`` in the customer_success project
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     output: dbtRunnerResult = runner.invoke(["build"])
@@ -142,7 +148,7 @@ def test_dbt_loom_injects_groups():
     assert isinstance(output.exception, dbt.exceptions.DbtReferenceError)
 
 
-def test_dbt_core_telemetry_blocking():
+def test_dbt_core_telemetry_blocking(monkeypatch):
     """Verify that dbt-loom prevents telemetry about itself from being sent."""
     import shutil
 
@@ -151,6 +157,7 @@ def test_dbt_core_telemetry_blocking():
     # Compile the revenue project
 
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     shutil.rmtree("logs")
@@ -163,13 +170,14 @@ def test_dbt_core_telemetry_blocking():
 
     os.chdir(starting_path)
 
-def test_dbt_loom_injects_microbatch_event_time():
+def test_dbt_loom_injects_microbatch_event_time(monkeypatch):
     """Verify that dbt-loom injects the 'event_time' property to allow proper microbatch configuration"""
     import shutil
 
     runner = dbtRunner()
 
     os.chdir(f"{starting_path}/test_projects/revenue")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     shutil.rmtree("logs")
     runner.invoke(["clean"])
     runner.invoke(["deps"])
@@ -177,6 +185,7 @@ def test_dbt_loom_injects_microbatch_event_time():
     runner.invoke(["build"])
 
     os.chdir(f"{starting_path}/test_projects/customer_success")
+    monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     shutil.rmtree("logs")
@@ -204,3 +213,83 @@ def test_dbt_loom_injects_microbatch_event_time():
         assert "has no 'ref' or 'source' input with an 'event_time' configuration" not in log_contents
 
     os.chdir(starting_path)
+
+@dbt_version(">=1.11.0", "<1.12.0")
+def test_dbt_loom_injects_user_defined_functions(monkeypatch, postgres):
+    """Verify that dbt-loom correctly handles upstream user-defined functions."""
+    import shutil
+
+    runner = dbtRunner()
+
+    # Create a UDF in the revenue project
+    functions_dir = Path(f"{starting_path}/test_projects/revenue/functions")
+    functions_dir.mkdir(exist_ok=True)
+
+    schema_path = functions_dir / "schema.yml"
+    udf_sql_path = functions_dir / "double_value.sql"
+    model_path = Path(
+        f"{starting_path}/test_projects/revenue/models/marts/doubled_orders.sql"
+    )
+    model_yml_path = Path(
+        f"{starting_path}/test_projects/revenue/models/marts/_doubled_orders.yml"
+    )
+
+    with open(schema_path, "w") as f:
+        f.write(
+            "functions:\n"
+            "  - name: double_value\n"
+            "    description: Doubles a numeric value\n"
+            "    arguments:\n"
+            "      - name: a_value\n"
+            "        data_type: integer\n"
+            "    returns:\n"
+            "      data_type: integer\n"
+        )
+
+    with open(udf_sql_path, "w") as f:
+        f.write("a_value * 2\n")
+
+    with open(model_yml_path, "w") as f:
+        f.write(
+            "version: 2\n"
+            "\n"
+            "models:\n"
+            "  - name: doubled_orders\n"
+            "    description: Orders with doubled totals using a UDF.\n"
+            "    access: public\n"
+        )
+
+    with open(model_path, "w") as f:
+        f.write(
+            "select\n"
+            "    order_id,\n"
+            "    {{ function('double_value') }}(order_total) as doubled_total\n"
+            "from {{ ref('stg_orders') }}\n"
+        )
+
+    try:
+        # Compile the revenue project to generate manifest with function nodes
+        os.chdir(f"{starting_path}/test_projects/revenue")
+        monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
+        runner.invoke(["clean"])
+        runner.invoke(["deps"])
+        output = runner.invoke(["compile"])
+
+        assert output.exception is None, f"Revenue compile failed: {output.exception}"
+
+        # Build customer_success which imports revenue's manifest via dbt-loom
+        os.chdir(f"{starting_path}/test_projects/customer_success")
+        monkeypatch.setenv("DBT_PROFILES_DIR", os.getcwd())
+        runner.invoke(["clean"])
+        runner.invoke(["deps"])
+        output: dbtRunnerResult = runner.invoke(["build"])
+
+        # dbt-loom should handle function nodes without errors
+        assert output.exception is None
+
+    finally:
+        # Clean up created files
+        model_path.unlink(missing_ok=True)
+        model_yml_path.unlink(missing_ok=True)
+        shutil.rmtree(functions_dir, ignore_errors=True)
+        os.chdir(starting_path)
