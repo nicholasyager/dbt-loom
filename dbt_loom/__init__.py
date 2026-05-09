@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import os
 import re
 from pathlib import Path
-from typing import Callable, Dict, Optional, Set
+from typing import Callable, Dict, Optional, Set, Any
 
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
@@ -56,7 +56,7 @@ class LoomModelNodeArgs(ModelNodeArgs):
         return unique_id
 
 
-def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
+def identify_node_subgraph(manifest: Dict[str, Any]) -> Dict[str, ManifestNode]:
     """
     Identify all nodes that should be selected from the manifest, and return ManifestNodes.
     """
@@ -64,13 +64,8 @@ def identify_node_subgraph(manifest) -> Dict[str, ManifestNode]:
     output = {}
 
     # We're going to temporarily allow all nodes here.
-    for unique_id in manifest["nodes"].keys():
-        if unique_id.split(".")[0] in (NodeType.Test.value, NodeType.Macro.value, "function"):
-            continue
-
-        node = manifest.get("nodes", {}).get(unique_id)
-
-        if not node:
+    for unique_id, node in manifest["nodes"].items():
+        if node["resource_type"] in (NodeType.Test, NodeType.Macro, getattr(NodeType, "Function", "function")):
             continue
 
         if node.get("access") is None:

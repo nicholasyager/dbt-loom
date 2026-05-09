@@ -66,7 +66,7 @@ class ManifestNode(BaseModel, use_enum_values=True):
             return []
 
         return [
-            node for node in depends_on.nodes if node.split(".")[0] not in ("source", "function")
+            node for node in depends_on.nodes if node.split(".")[0] not in (NodeType.Source, getattr(NodeType, "Function", "function"))
         ]
 
     @validator("resource_type", always=True)
