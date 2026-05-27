@@ -20,7 +20,7 @@ except ModuleNotFoundError:
     from dbt.node_types import NodeType  # type: ignore
 
 
-from dbt_loom.config import LoomConfigurationError, dbtLoomConfig
+from dbt_loom.config import LoomConfigurationError, ManifestReference, dbtLoomConfig
 from dbt_loom.transformers import TransformerContext, chain_transformers, resolve_transformer
 from dbt_loom.logging import fire_event
 from dbt_loom.manifests import ManifestLoader, ManifestNode
@@ -103,6 +103,24 @@ def convert_model_nodes_to_model_node_args(
     }
 
 
+def merge_loom_nodes(
+    existing_nodes: Dict[str, LoomModelNodeArgs],
+    new_nodes: Dict[str, LoomModelNodeArgs],
+    manifest_name: str,
+) -> None:
+    """Merge ``new_nodes`` from a manifest into ``existing_nodes`` in place.
+
+    Nodes owned by this manifest's project are authoritative and should
+    always be used. Transitive dependency nodes (from other packages) should
+    only be added if not already provided by a previous, more authoritative
+    manifest.
+    """
+    for key, value in new_nodes.items():
+        is_authoritative = value.package_name == manifest_name
+        if is_authoritative or key not in existing_nodes:
+            existing_nodes[key] = value
+
+
 @dataclass
 class LoomRunnableConfig:
     """A shim class to allow is_invalid_*_ref functions to correctly handle access for loom-injected models."""
@@ -133,7 +151,8 @@ class dbtLoom(dbtPlugin):
         self.config: Optional[dbtLoomConfig] = self.read_config(configuration_path)
         self.models: Dict[str, LoomModelNodeArgs] = {}
 
-        self._patch_ref_protection()
+        if self.config is not None:
+            self._patch_ref_protection()
 
         if not self.config or (self.config and not self.config.enable_telemetry):
             self._patch_plugin_telemetry()
@@ -263,6 +282,19 @@ class dbtLoom(dbtPlugin):
             config_str,
         )
 
+    @staticmethod
+    def filter_models(reference: ManifestReference, node: ManifestNode) -> bool:
+        """Evaluate if a node should be included based on the node's package and the manifest reference."""
+        if len(reference.included_packages) > 0:
+            if node.package_name in reference.included_packages:
+                return True
+            return False
+
+        if node.package_name not in reference.excluded_packages:
+            return True
+
+        return False
+
     def initialize(self) -> None:
         """Initialize the plugin"""
 
@@ -316,12 +348,12 @@ class dbtLoom(dbtPlugin):
             filtered_nodes = {
                 key: value
                 for key, value in selected_nodes.items()
-                if value.package_name not in manifest_reference.excluded_packages
+                if self.filter_models(manifest_reference, value)
             }
 
             loom_nodes = convert_model_nodes_to_model_node_args(filtered_nodes)
 
-            self.models.update(loom_nodes)
+            merge_loom_nodes(self.models, loom_nodes, manifest_name)
 
     @dbt_hook
     def get_nodes(self) -> PluginNodes:

@@ -38,6 +38,26 @@ manifests:
       - dbt_project_evaluator
 ```
 
+## Include only specific packages
+
+In a mesh with bi-directional references between many projects, maintaining
+`excluded_packages` lists can become unwieldy. As an alternative, you can use
+`included_packages` to explicitly allowlist which packages from a referenced
+manifest should be injected:
+
+```yaml
+manifests:
+  - name: project_b
+    type: file
+    config:
+      path: ../project_b/target/manifest.json
+    included_packages:
+      - project_b # Only import nodes owned by this project
+```
+
+> **Note:** `included_packages` and `excluded_packages` are mutually exclusive.
+> You may only use one or the other, not both.
+
 ## Gzipped files
 
 `dbt-loom` natively supports decompressing gzipped manifest files. This is useful to reduce object storage size and to minimize loading times when reading manifests from object storage. Compressed file detection is triggered when the file path for the manifest is suffixed

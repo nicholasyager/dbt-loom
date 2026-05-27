@@ -6,6 +6,7 @@ from typing import Dict
 
 from dbt.config.runtime import load_profile
 from dbt.flags import get_flags
+from dbt_loom.clients import is_gzipped
 from dbt_loom.logging import fire_event
 from pydantic import BaseModel
 
@@ -71,11 +72,11 @@ class SnowflakeClient:
 
         download_path = Path(tmp_dir) / file_name
 
-        if download_path.name.endswith(".gz"):
-            with gzip.GzipFile(download_path) as gzip_file:
+        with download_path.open("r") as f:
+            content = f.read()
+
+        if is_gzipped(content.encode()):
+            with gzip.GzipFile(content) as gzip_file:
                 content = gzip_file.read().decode("utf-8")
-        else:
-            with download_path.open("r") as f:
-                content = f.read()
 
         return json.loads(content)

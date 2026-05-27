@@ -257,6 +257,27 @@ manifests:
       - dbt_project_evaluator
 ```
 
+## Include only specific packages
+
+In a mesh with bi-directional references between many projects, maintaining
+`excluded_packages` lists can become unwieldy. As an alternative, you can use
+`included_packages` to explicitly allowlist which packages from a referenced
+manifest should be injected:
+
+```yaml
+manifests:
+  - name: project_b
+    type: file
+    config:
+      path: ../project_b/target/manifest.json
+    included_packages:
+      - project_b # Only import nodes owned by this project
+```
+
+> **Note:** `included_packages` and `excluded_packages` are mutually exclusive.
+> You may only use one or the other, not both.
+
+
 ### Optional manifests
 
 If you want to allow a manifest reference to be missing (e.g. using dbt-loom for an upstream project to see dependencies), you can set `optional: true` for that manifest entry. When `optional` is true and the manifest file does not exist, dbt-loom will skip loading it without raising an error. If `optional` is false or omitted (the default), missing manifests will cause an error.

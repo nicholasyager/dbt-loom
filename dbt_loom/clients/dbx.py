@@ -2,6 +2,7 @@ import json
 import gzip
 from io import BytesIO
 from typing import Dict
+from dbt_loom.clients import is_gzipped
 from dbt_loom.logging import fire_event
 from pydantic import BaseModel
 from urllib.parse import ParseResult, unquote
@@ -63,7 +64,11 @@ class DatabricksClient:
                 try:
                     downloaded_bytes = base64.b64decode(export_content)
                 except Exception:
-                    downloaded_bytes = export_content if isinstance(export_content, bytes) else export_content.encode('utf-8')
+                    downloaded_bytes = (
+                        export_content
+                        if isinstance(export_content, bytes)
+                        else export_content.encode("utf-8")
+                    )
             # If it's a DBFS path, use w.dbfs.download
             elif path_str.startswith("/dbfs/"):
                 # Remove the /dbfs prefix for w.dbfs.download as it expects paths relative to DBFS root
@@ -81,16 +86,21 @@ class DatabricksClient:
         # Deserialize the object: handle gzip decompression and then load JSON.
         try:
             content_string = None
-            if path_str.endswith('.gz'):
+            if downloaded_bytes is None:
+                raise ValueError("No content downloaded.")
+
+            if is_gzipped(downloaded_bytes):
                 with gzip.GzipFile(fileobj=BytesIO(downloaded_bytes)) as gzipfile:
-                    content_string = gzipfile.read().decode('utf-8')
+                    content_string = gzipfile.read().decode("utf-8")
             else:
-                content_string = downloaded_bytes.decode('utf-8')
+                content_string = downloaded_bytes.decode("utf-8")
 
             return json.loads(content_string)
         except json.decoder.JSONDecodeError:
             fire_event(msg=f"The object `{path_str}` does not contain valid JSON.")
             raise
         except Exception:
-            fire_event(msg=f"Unable to read the data contained in the object `{path_str}`")
+            fire_event(
+                msg=f"Unable to read the data contained in the object `{path_str}`"
+            )
             raise

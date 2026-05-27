@@ -51,9 +51,9 @@ def test_dbt_core_runs_loom_plugin():
 
     os.chdir(starting_path)
 
-    assert set(output.result).issuperset(
-        subset
-    ), "The child project is missing expected nodes. Check that injection still works."
+    assert set(output.result).issuperset(subset), (
+        "The child project is missing expected nodes. Check that injection still works."
+    )
 
 
 def test_dbt_loom_injects_dependencies():
@@ -163,6 +163,7 @@ def test_dbt_core_telemetry_blocking():
 
     os.chdir(starting_path)
 
+
 def test_dbt_loom_injects_microbatch_event_time():
     """Verify that dbt-loom injects the 'event_time' property to allow proper microbatch configuration"""
     import shutil
@@ -180,12 +181,9 @@ def test_dbt_loom_injects_microbatch_event_time():
     runner.invoke(["clean"])
     runner.invoke(["deps"])
     shutil.rmtree("logs")
-    output: dbtRunnerResult = runner.invoke([
-            "build",
-            "--event-time-start", "2016-09-01",
-            "--event-time-end", "2016-09-15"
-        ],
-        vars={ 'test_microbatch_event_time': True }
+    output: dbtRunnerResult = runner.invoke(
+        ["build", "--event-time-start", "2016-09-01", "--event-time-end", "2016-09-15"],
+        vars={"test_microbatch_event_time": True},
     )
 
     assert output.exception is None
@@ -197,10 +195,13 @@ def test_dbt_loom_injects_microbatch_event_time():
         # The duckdb adapter used for testing doesn't actually support microbatch
         # This assertion can be uncommented when https://github.com/duckdb/dbt-duckdb/pull/644 is merged
         # and the adapter updated to the appropriate version
-        #assert "ERROR creating sql microbatch model main.orders" not in log_contents
+        # assert "ERROR creating sql microbatch model main.orders" not in log_contents
 
         # For now, we just confirm that dbt-core itself doesn't complain about missing event_time configurations
         # for models outside the 'current' project
-        assert "has no 'ref' or 'source' input with an 'event_time' configuration" not in log_contents
+        assert (
+            "has no 'ref' or 'source' input with an 'event_time' configuration"
+            not in log_contents
+        )
 
     os.chdir(starting_path)

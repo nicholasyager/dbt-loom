@@ -7,6 +7,7 @@ import gzip
 from io import BytesIO
 from pydantic import BaseModel
 
+from dbt_loom.clients import is_gzipped
 from dbt_loom.logging import fire_event
 
 
@@ -49,12 +50,13 @@ class S3Client:
 
         # Deserialize the body of the object.
         try:
-            if self.object_name.endswith(".gz"):
-                body = response["Body"].read()
+            body = response["Body"].read()
+
+            if is_gzipped(body):
                 with gzip.GzipFile(fileobj=BytesIO(body)) as gzipfile:
                     content = gzipfile.read().decode("utf-8")
             else:
-                content = response["Body"].read().decode("utf-8")
+                content = body.decode("utf-8")
         except Exception:
             raise Exception(
                 f"Unable to read the data contained in the object `{self.object_name}"

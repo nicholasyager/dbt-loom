@@ -6,6 +6,7 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel
 
+from dbt_loom.clients import is_gzipped
 from dbt_loom.logging import fire_event
 
 
@@ -28,7 +29,7 @@ class GCSClient:
         bucket_name: str,
         object_name: str,
         credentials: Optional[Path] = None,
-        impersonate_service_account: Optional[str] = None
+        impersonate_service_account: Optional[str] = None,
     ) -> None:
         self.project_id = project_id
         self.bucket_name = bucket_name
@@ -53,17 +54,22 @@ class GCSClient:
                     msg="dbt-loom expected google-auth to be installed for service account impersonation."
                 )
                 raise
-            source_credentials, _ = google.auth.default() if self.credentials is None else google.auth.load_credentials_from_file(self.credentials)
+            source_credentials, _ = (
+                google.auth.default()
+                if self.credentials is None
+                else google.auth.load_credentials_from_file(self.credentials)
+            )
             impersonated_credentials = google.auth.impersonated_credentials.Credentials(
                 source_credentials=source_credentials,
                 target_principal=self.impersonate_service_account,
                 target_scopes=["https://www.googleapis.com/auth/devstorage.read_only"],
-                lifetime=60
+                lifetime=60,
             )
-            fire_event(msg=f"Impersonating service account '{self.impersonate_service_account}' for GCS access.")
+            fire_event(
+                msg=f"Impersonating service account '{self.impersonate_service_account}' for GCS access."
+            )
             client = storage.Client(
-                project=self.project_id,
-                credentials=impersonated_credentials
+                project=self.project_id, credentials=impersonated_credentials
             )
         else:
             try:
@@ -87,13 +93,14 @@ class GCSClient:
                 f"The object `{self.object_name}` does not exist in bucket "
                 f"`{self.bucket_name}`."
             )
+        content = blob.download_as_bytes()
 
-        if self.object_name.endswith(".gz"):
+        if is_gzipped(content):
             compressed_manifest = blob.download_as_bytes()
-            with gzip.GzipFile(fileobj=BytesIO(compressed_manifest)) as gzip_file:
-                manifest_json = gzip_file.read()
+            with gzip.GzipFile(fileobj=BytesIO(content)) as gzip_file:
+                manifest_json = gzip_file.read().decode("utf-8")
         else:
-            manifest_json = blob.download_as_text()
+            manifest_json = content.decode("utf-8")
 
         try:
             return json.loads(manifest_json)

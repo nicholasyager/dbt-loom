@@ -17,6 +17,7 @@ try:
 except ModuleNotFoundError:
     from dbt.node_types import NodeType  # type: ignore
 
+from dbt_loom.clients import is_gzipped
 from dbt_loom.clients.az_blob import AzureClient, AzureReferenceConfig
 from dbt_loom.clients.dbt_cloud import DbtCloud, DbtCloudReferenceConfig
 from dbt_loom.clients.paradime import ParadimeClient, ParadimeReferenceConfig
@@ -151,11 +152,13 @@ class ManifestLoader:
         if not file_path.exists():
             raise LoomConfigurationError(f"The path `{file_path}` does not exist.")
 
-        if file_path.suffix == ".gz":
-            with gzip.open(file_path, "rt") as file:
-                return json.load(file)
+        file = open(file_path)
+        content = file.read()
+        if is_gzipped(content.encode()):
+            with gzip.GzipFile(content) as gz_file:
+                return json.load(gz_file)
 
-        return json.load(open(file_path))
+        return json.loads(content)
 
     @staticmethod
     def load_from_http(config: FileReferenceConfig) -> Dict:
@@ -169,11 +172,10 @@ class ManifestLoader:
 
         # Check for compression on the file. If compressed, store it in a buffer
         # and decompress it.
-        if (
-            config.path.path.endswith(".gz")
-            or response.headers.get("Content-Encoding") == "gzip"
-        ):
-            with gzip.GzipFile(fileobj=BytesIO(response.content)) as gz_file:
+        content = BytesIO(response.content)
+        if is_gzipped(content.read()):
+            content.seek(0)
+            with gzip.GzipFile(fileobj=content) as gz_file:
                 return json.load(gz_file)
 
         return response.json()
