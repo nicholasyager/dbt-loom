@@ -67,6 +67,7 @@ class ManifestNode(BaseModel, use_enum_values=True):
     enabled: bool = True
     config: dict = Field(default_factory=dict)
     contract: dict = Field(default_factory=dict)
+    columns: dict = Field(default_factory=dict)
 
     @validator("depends_on_nodes", always=True)
     def default_depends_on_nodes(cls, v, values):
