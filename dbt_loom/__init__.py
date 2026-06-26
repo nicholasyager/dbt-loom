@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dataclass_fields
 import os
 import re
 from pathlib import Path
@@ -25,6 +25,28 @@ from dbt_loom.logging import fire_event
 from dbt_loom.manifests import ManifestLoader, ManifestNode
 
 import importlib.metadata
+
+
+def _build_column_info(columns_data: dict) -> dict:
+    """Build ColumnInfo objects from raw manifest column data, with dbt version compatibility."""
+    try:
+        from dbt.artifacts.resources.v1.components import ColumnInfo
+    except ImportError:
+        try:
+            from dbt.contracts.graph.nodes import ColumnInfo  # type: ignore
+        except ImportError:
+            return {}
+
+    known_fields = {f.name for f in dataclass_fields(ColumnInfo)}
+    result = {}
+    for col_name, col_data in columns_data.items():
+        try:
+            result[col_name] = ColumnInfo(
+                **{k: v for k, v in col_data.items() if k in known_fields}
+            )
+        except Exception:
+            pass
+    return result
 
 
 @dataclass
@@ -219,6 +241,12 @@ class dbtLoom(dbtPlugin):
             model = function(args)
             model.group = args.group
             model.config.event_time = args.event_time
+
+            if args.contract_info.get("enforced"):
+                model.contract.enforced = True
+                if args.columns_info:
+                    model.columns = _build_column_info(args.columns_info)
+
             return model
 
         return outer_function
