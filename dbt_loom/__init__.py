@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields as dataclass_fields
+from dataclasses import dataclass
 import os
 import re
 from pathlib import Path
@@ -37,13 +37,10 @@ def _build_column_info(columns_data: dict) -> dict:
         except ImportError:
             return {}
 
-    known_fields = {f.name for f in dataclass_fields(ColumnInfo)}
     result = {}
     for col_name, col_data in columns_data.items():
         try:
-            result[col_name] = ColumnInfo(
-                **{k: v for k, v in col_data.items() if k in known_fields}
-            )
+            result[col_name] = ColumnInfo.from_dict(col_data)
         except Exception:
             pass
     return result
@@ -244,6 +241,9 @@ class dbtLoom(dbtPlugin):
 
             if args.contract_info.get("enforced"):
                 model.contract.enforced = True
+                model.contract.alias_types = args.contract_info.get("alias_types", True)
+                model.contract.checksum = args.contract_info.get("checksum")
+                model.config.contract.enforced = True
                 if args.columns_info:
                     model.columns = _build_column_info(args.columns_info)
 
