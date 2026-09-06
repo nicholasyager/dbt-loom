@@ -53,8 +53,8 @@ markdown_extensions:
   - pymdownx.details # allow collapsible blocks
   - admonition
 
-repo_url: https://github.com/nicholasyager/dbt-loom
-repo_name: nicholasyager/dbt-loom
+repo_url: https://github.com/adrienneyager/dbt-loom
+repo_name: adrienneyager/dbt-loom
 edit_uri: edit/main/docs/
 
 nav:
