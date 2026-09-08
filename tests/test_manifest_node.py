@@ -18,6 +18,7 @@ def test_rewrite_resource_types():
         "package_name": "example",
         "schema": "bar",
         "resource_type": "model",
+        "original_file_path": "seeds/example/foo",
     }
 
     manifest_node = ManifestNode(**(node))  # type: ignore
@@ -35,6 +36,7 @@ def test_rewrite_identifiers_true_negative():
         "schema": "bar",
         "resource_type": "model",
         "resource_name": "prod.bar.foo",
+        "original_file_path": "models/bar/foo",
     }
 
     manifest_node = ManifestNode(**(node))  # type: ignore
@@ -58,6 +60,7 @@ def test_rewrite_identifiers_true_positives(quote_char):
         "schema": "bar",
         "resource_type": "model",
         "relation_name": relation_name,
+        "original_file_path": "seed/example/foo",
     }
 
     manifest_node = ManifestNode(**(node))  # type: ignore

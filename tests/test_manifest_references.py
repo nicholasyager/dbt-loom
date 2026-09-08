@@ -28,6 +28,7 @@ def test_filter_nodes_from_excluded_packages_list():
         unique_id="model.bar.example",
         resource_type=NodeType.Model,
         schema="bar",
+        original_file_path="models/bar/foo",
     )
 
     assert not dbtLoom.filter_models(manifest_reference, node)
@@ -49,6 +50,7 @@ def test_filter_nodes_not_in_excluded_packages_list():
         unique_id="model.baz.example",
         resource_type=NodeType.Model,
         schema="baz",
+        original_file_path="models/baz/example",
     )
 
     assert dbtLoom.filter_models(manifest_reference, node)
@@ -69,6 +71,7 @@ def test_filter_nodes_not_in_included_packages_list():
         unique_id="model.baz.example",
         resource_type=NodeType.Model,
         schema="baz",
+        original_file_path="models/baz/example",
     )
 
     assert not dbtLoom.filter_models(manifest_reference, node)
@@ -89,6 +92,7 @@ def test_filter_nodes_in_included_packages_list():
         unique_id="model.bar.example",
         resource_type=NodeType.Model,
         schema="bar",
+        original_file_path="models/bar/example",
     )
 
     assert dbtLoom.filter_models(manifest_reference, node)
