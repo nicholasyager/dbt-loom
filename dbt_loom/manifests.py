@@ -8,6 +8,11 @@ import re
 from typing import Dict, List, Optional
 from urllib.parse import unquote, urlunparse
 
+try:
+    from dbt.artifacts.resources.v1.components import ColumnInfo
+except ModuleNotFoundError:
+    from dbt.contracts.graph.nodes import ColumnInfo  # type: ignore
+
 from pydantic import BaseModel, Field, validator
 import requests
 
@@ -53,6 +58,9 @@ class ManifestNode(BaseModel, use_enum_values=True):
     package_name: str
     unique_id: str
     resource_type: NodeType
+    # Used to render project filetree in docs site
+    # This is a required field according to the JSON schema https://schemas.getdbt.com/dbt/manifest/v12/index.html
+    original_file_path: str
     schema_name: str = Field(alias="schema")
     database: Optional[str] = None
     relation_name: Optional[str] = None
@@ -66,6 +74,12 @@ class ManifestNode(BaseModel, use_enum_values=True):
     depends_on_nodes: List[str] = Field(default_factory=list)
     enabled: bool = True
     config: dict = Field(default_factory=dict)
+    description: Optional[str] = None
+    columns: Optional[dict[str, ColumnInfo]] = None
+    tags: list[str] = Field(default_factory=list)
+    compiled: Optional[bool] = None
+    raw_code: Optional[str] = None
+    compiled_code: Optional[str] = None
 
     @validator("depends_on_nodes", always=True)
     def default_depends_on_nodes(cls, v, values):

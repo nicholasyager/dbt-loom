@@ -1,10 +1,21 @@
 import os
 from pathlib import Path
 
+import pytest
+import json
+
 import dbt
+
+try:
+    from dbt.artifacts.resources.types import NodeType
+except ModuleNotFoundError:
+    from dbt.node_types import NodeType  # type: ignore
+
+
 from dbt.cli.main import dbtRunner, dbtRunnerResult
 
 
+from dbt.contracts.graph.manifest import Manifest
 import dbt.exceptions
 
 
@@ -205,3 +216,37 @@ def test_dbt_loom_injects_microbatch_event_time():
         )
 
     os.chdir(starting_path)
+
+
+@pytest.mark.parametrize(
+    "cmd", [("build",), ("compile",), ("docs", "generate"), ("run",)]
+)
+def test_dbt_loom_injects_extra_node_attrs(cmd):
+    """Verify that dbt-loom sets attributes on injected models."""
+
+    extra_attrs = ["compiled", "compiled_code", "original_file_path", "raw_code"]
+    parent_project_name = "customer_success"
+
+    runner = dbtRunner()
+
+    os.chdir(f"{starting_path}/test_projects/revenue")
+    runner.invoke(["clean"])
+    runner.invoke(["deps"])
+    result = runner.invoke([*cmd])
+
+    assert result.exception is None
+
+    with open(f"{os.curdir}/target/manifest.json") as fp:
+        manifest = Manifest.from_dict(json.load(fp))
+
+    injected_models = {
+        node_id: node
+        for node_id, node in manifest.nodes.items()
+        if node.resource_type == NodeType.Model
+        and node.package_name == parent_project_name
+    }
+
+    assert injected_models
+
+    for model in injected_models.values():
+        assert all([hasattr(model, attr) for attr in extra_attrs])

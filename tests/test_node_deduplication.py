@@ -24,6 +24,7 @@ def _make_node(unique_id, package_name, access="protected"):
         "schema": "core",
         "resource_type": "model",
         "access": access,
+        "original_file_path": "foo/bar/example",
     }
 
 

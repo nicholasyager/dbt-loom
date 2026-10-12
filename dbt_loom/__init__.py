@@ -1,9 +1,15 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 import re
 from pathlib import Path
-from typing import Callable, Dict, Optional, Set
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Set
 
+try:
+    from dbt.artifacts.resources.v1.components import ColumnInfo
+except ModuleNotFoundError:
+    from dbt.contracts.graph.nodes import ColumnInfo  # type: ignore
+
+from dbt.artifacts.resources.v1.components import ColumnInfo
 import yaml
 from dbt.contracts.graph.node_args import ModelNodeArgs
 from dbt.contracts.graph.nodes import ModelNode
@@ -13,6 +19,7 @@ from dbt.plugins.manifest import PluginNodes
 from dbt.config.project import VarProvider
 
 from dbt_loom.shims import is_invalid_private_ref, is_invalid_protected_ref
+
 
 try:
     from dbt.artifacts.resources.types import NodeType
@@ -32,20 +39,48 @@ class LoomModelNodeArgs(ModelNodeArgs):
     """A dbt-loom extension of ModelNodeArgs to preserve resource types across lineages."""
 
     resource_type: NodeType = NodeType.Model
+    # This is a required field according to the JSON schema
+    # but needs a default value for dataclasse magic-init related reasons
+    original_file_path: Optional[str] = None
     group: Optional[str] = None
     event_time: Optional[str] = None
+    description: Optional[str] = None
+    tags: Optional[list[str]] = field(default_factory=list)
+    columns: Optional[dict[str, dict]] = None
+    compiled: Optional[bool] = None
+    raw_code: Optional[str] = None
+    compiled_code: Optional[str] = None
 
     def __init__(self, **kwargs):
         super().__init__(
             **{
                 key: value
                 for key, value in kwargs.items()
-                if key not in ("resource_type", "group", "config")
+                if key
+                not in (
+                    "resource_type",
+                    "group",
+                    "config",
+                    "description",
+                    "tags",
+                    "columns",
+                    "original_file_path",
+                    "raw_code",
+                    "compiled_code",
+                    "compiled",
+                )
             }
         )
         self.resource_type = kwargs.get("resource_type", NodeType.Model)
         self.group = kwargs.get("group")
         self.event_time = kwargs.get("config", {}).get("event_time", None)
+        self.original_file_path = kwargs.get("original_file_path", None)
+        self.description = kwargs.get("description", None)
+        self.tags = kwargs.get("tags", [])
+        self.columns = kwargs.get("columns", {})
+        self.compiled = kwargs.get("compiled", None)
+        self.raw_code = kwargs.get("raw_code", None)
+        self.compiled_code = kwargs.get("compiled_code", None)
 
     @property
     def unique_id(self) -> str:
@@ -151,6 +186,7 @@ class dbtLoom(dbtPlugin):
 
         if self.config is not None:
             self._patch_ref_protection()
+            self._patch_after_run()
 
         if not self.config or (self.config and not self.config.enable_telemetry):
             self._patch_plugin_telemetry()
@@ -215,6 +251,15 @@ class dbtLoom(dbtPlugin):
             model = function(args)
             model.group = args.group
             model.config.event_time = args.event_time
+            model.description = args.description
+            model.columns = (
+                {k: ColumnInfo.from_dict(v) for k, v in args.columns.items()}
+                if args.columns is not None
+                else {}
+            )
+            model.original_file_path = args.original_file_path
+            model.tags = args.tags
+
             return model
 
         return outer_function
@@ -245,6 +290,65 @@ class dbtLoom(dbtPlugin):
                     dependencies[manifest_name] = LoomRunnableConfig()
 
             return function(inner_self, node, target_model, dependencies)
+
+        return outer_function
+
+    def _patch_after_run(self) -> None:
+        """Patch `after_run` method to add more complete docs for injected nodes."""
+
+        from dbt.task.build import BuildTask
+        from dbt.task.compile import CompileTask
+
+        try:
+            from dbt.task.docs.generate import GenerateTask
+        except ModuleNotFoundError:
+            from dbt.task.generate import GenerateTask  # type: ignore
+        from dbt.task.run import RunTask
+
+        fire_event(
+            msg="dbt-loom: Patching after-run method to improve docs for injected nodes."
+        )
+
+        BuildTask.after_run = self.after_run_wrapper(  # type: ignore[method-assign]
+            BuildTask.after_run
+        )
+        CompileTask.after_run = self.after_run_wrapper(  # type: ignore[method-assign]
+            CompileTask.after_run
+        )
+        GenerateTask.after_run = self.after_run_wrapper(  # type: ignore[method-assign]
+            GenerateTask.after_run
+        )
+        RunTask.after_run = self.after_run_wrapper(RunTask.after_run)  # type: ignore[method-assign]
+
+    def after_run_wrapper(self, function) -> Callable:
+        """
+        Wrap the `after_run` method for GraphRunnableTasks to add extra node attrs for dbt docs.
+
+        These additionals attributes MUST be set after the compile phase is finished. Setting the
+        additional attributes prior to compile may result in compilation failures.
+
+        For example, because the plugin interface only injects ModelNodes in PluginNodes, compilation
+        will fail if the injected PluginNodes depend on macros defined in another dbt project, including
+        their own root project.
+        """
+        if TYPE_CHECKING:
+            from dbt.task.runnable import GraphRunnableTask
+
+        def outer_function(
+            task_instance: "GraphRunnableTask", adapter, results
+        ) -> None:
+            function(task_instance, adapter, results)
+            if task_instance.manifest is not None:
+                models = {
+                    node_id: node
+                    for node_id, node in task_instance.manifest.nodes.items()
+                    if node.resource_type == NodeType.Model
+                }
+                for node_id, node in models.items():
+                    if args := self.models.get(node_id, None):
+                        node.compiled = args.compiled or False
+                        node.raw_code = args.raw_code or ""
+                        node.compiled_code = args.compiled_code
 
         return outer_function
 
