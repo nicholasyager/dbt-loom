@@ -1,3 +1,4 @@
+import gzip
 import json
 from pathlib import Path
 
@@ -50,6 +51,21 @@ def test_load_from_local_filesystem_local_path(example_file):
     output = ManifestLoader.load_from_local_filesystem(file_config)
 
     assert output == example_content
+
+
+def test_manifest_loader_reads_local_gzip_manifest(tmp_path):
+    """Local file references should decode gzip bytes before interpreting text."""
+
+    manifest = {"metadata": {"dbt_version": "1.12.2"}}
+    path = tmp_path / "manifest.json.gz"
+    path.write_bytes(gzip.compress(json.dumps(manifest).encode("utf-8")))
+    reference = ManifestReference(
+        name="gzip-example",
+        type=ManifestReferenceType.file,
+        config=FileReferenceConfig(path=str(path)),  # type: ignore
+    )
+
+    assert ManifestLoader().load(reference) == manifest
 
 
 def test_load_from_path_fails_invalid_scheme(example_file):
